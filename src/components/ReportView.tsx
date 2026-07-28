@@ -2,10 +2,7 @@ import type { ComplianceInput, ReportOutput } from '../types'
 import { CN_ASSET_LABELS, JP_ASSET_LABELS, HEIR_LOCATION_LABELS, DOC_TYPE_LABELS } from '../types'
 import { downloadPDF } from '../utils/pdf'
 import { HeirDiagram } from './HeirDiagram'
-import { CalculatorPanel } from './CalculatorPanel'
-import { ScenarioComparison } from './ScenarioComparison'
-import { AssetStructureCompare } from './AssetStructureCompare'
-import type { CalcInput } from '../engine/calculator'
+import { LockedModule } from './LockedModule'
 
 function generateSummary(input: ComplianceInput, report: ReportOutput): string {
   const parts: string[] = []
@@ -276,41 +273,55 @@ export function ReportView({
         })()}
       />
 
-      {/* 计算框架 */}
-      <CalculatorPanel
-        hasSpouse={input.heirs.spouse_exists}
-        childrenCount={input.heirs.children_count}
-        grandchildrenCount={input.heirs.grandchildren_count}
-        parentsAlive={input.heirs.parents_alive_count}
-        habitualResidence={input.identity.habitual_residence || 'CN'}
-        maritalRegime={input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community'}
-        hasWill={input.document.doc_type !== '' && input.document.doc_type !== 'NONE'}
-        willType={input.document.doc_type || 'none'}
-      />
+      {/* === 付费模块：进阶分析 === */}
 
-      {/* 方案对比 */}
-      <ScenarioComparison input={{
-        totalValueCNY: 500,
-        cnRealEstatePct: input.assets.cn_assets.includes('cn_re') ? 40 : 0,
-        cnFinancialPct: input.assets.cn_assets.includes('cn_fin') ? 20 : 0,
-        cnLeveragePct: input.assets.cn_assets.includes('cn_leverage') ? 10 : 0,
-        jpRealEstatePct: input.assets.jp_assets.includes('jp_re') ? 20 : 0,
-        jpFinancialPct: input.assets.jp_assets.includes('jp_fin') ? 10 : 0,
-        hasSpouse: input.heirs.spouse_exists,
-        childrenCount: input.heirs.children_count,
-        grandchildrenCount: input.heirs.grandchildren_count,
-        parentsAlive: input.heirs.parents_alive_count,
-        habitualResidence: input.identity.habitual_residence === 'JP' ? 'JP' : 'CN',
-        maritalRegime: input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community',
-        hasWill: input.document.doc_type !== '' && input.document.doc_type !== 'NONE',
-        willType: input.document.doc_type || 'none',
-      } as CalcInput} />
+      <div className="border-t-2 border-dashed border-neutral-300 pt-6">
+        <div className="text-center mb-5">
+          <span className="text-xs bg-neutral-100 text-text-muted px-3 py-1 rounded-full">
+            🔒 以下为付费进阶功能
+          </span>
+          <h3 className="text-base font-semibold text-text-primary mt-2">
+            需要看到具体数字和方案对比？
+          </h3>
+          <p className="text-sm text-text-secondary mt-1">
+            解锁完整的费用精算、四方案对比和资产结构优化建议
+          </p>
+        </div>
 
-      {/* 资产结构对比 */}
-      <AssetStructureCompare
-        totalValue={500}
-        habitualResidence={input.identity.habitual_residence === 'JP' ? '日本' : '中国'}
-      />
+        <div className="space-y-5">
+          <LockedModule
+            icon="🧮"
+            title="法定继承模拟计算"
+            teaser="输入资产总额和类别比例，精确计算每个继承人要承担的费用和实际到手金额。区分中日婚姻财产制度对遗产总额的影响。"
+            bullets={[
+              '按继承人逐个列明公证费、登记税、继承税',
+              '日本2024年新规：登録免許税、不動産取得税、固定資産税',
+              '区分中国共同财产制 vs 日本分别财产制',
+              '实时滑块调参，不同资产配置不同结果',
+            ]}
+          />
+          <LockedModule
+            icon="🔀"
+            title="四方案对比"
+            teaser="同一笔资产，四种处理方式（法定继承 / 分立架构 / 配偶集中 / 隔代传承），费用和流程差异一目了然。"
+            bullets={[
+              '总费用、耗时、手续数横向对比',
+              '每种方案的继承税优化空间',
+              '优缺点卡片 + 推荐方案标注',
+            ]}
+          />
+          <LockedModule
+            icon="🏗"
+            title="资产结构与继承友好度分析"
+            teaser="从继承人视角评价你的资产配置——全现金、全房产还是混合？每种结构对后代有多'友好'？"
+            bullets={[
+              '继承友好度 1-10 评分',
+              '收租 vs 卖房的实战策略对比',
+              '房产继承死锁风险与流动性陷阱警示',
+            ]}
+          />
+        </div>
+      </div>
 
       {/* CTA Zone */}
       <section className="bg-surface-card border border-border rounded-xl p-5">
