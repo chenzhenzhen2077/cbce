@@ -283,6 +283,7 @@ export function ReportView({
         grandchildrenCount={input.heirs.grandchildren_count}
         parentsAlive={input.heirs.parents_alive_count}
         habitualResidence={input.identity.habitual_residence || 'CN'}
+        maritalRegime={input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community'}
         hasWill={input.document.doc_type !== '' && input.document.doc_type !== 'NONE'}
         willType={input.document.doc_type || 'none'}
       />
@@ -300,6 +301,7 @@ export function ReportView({
         grandchildrenCount: input.heirs.grandchildren_count,
         parentsAlive: input.heirs.parents_alive_count,
         habitualResidence: input.identity.habitual_residence === 'JP' ? 'JP' : 'CN',
+        maritalRegime: input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community',
         hasWill: input.document.doc_type !== '' && input.document.doc_type !== 'NONE',
         willType: input.document.doc_type || 'none',
       } as CalcInput} />

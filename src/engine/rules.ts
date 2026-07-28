@@ -160,6 +160,91 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
     })
   }
 
+  // ---- Rule 9: 日本2024继承登记强制义务 ----
+  if (assets.jp_assets.includes('jp_re')) {
+    report.warnings.push({
+      code: 'WARN_JP_2024_REGISTRATION',
+      title: '日本2024年继承登记强制义务（3年内必须完成）',
+      detail:
+        '2024年4月1日起，继承人须在继承开始后3年内完成不动产继承登记（相続登記）。既有未登记房产须在2027年3月31日前补登。逾期未登记最高罚款10万日元。',
+    })
+    report.roadmap.push({
+      text: '【日本方案】继承开始后立即联系司法书士启动相続登記。注意3年期限从死亡时起算，不可延误。既有房产若从未登记，须在2027年3月前补办。',
+      cost: { amount: '¥100,000-300,000', currency: 'JPY', time: '3-5 周（当前处理周期）' },
+      priority: 'procedural',
+    })
+  }
+
+  // ---- Rule 10: 外汇继承转移豁免（外籍继承人） ----
+  if (input.identity.nationality !== 'CN' && (assets.cn_assets.includes('cn_re') || assets.cn_assets.includes('cn_fin'))) {
+    report.warnings.push({
+      code: 'INFO_FOREX_EXEMPTION',
+      title: '外籍继承人外汇继承转移不受5万美元年度限额约束',
+      detail:
+        '外籍或港澳台继承人凭继承权公证书/法院判决书 + 资产清算证明 + 完税证明，可将继承资金一次性或分期汇出境外，不受个人年度5万美元购汇额度限制。但需提前向外管局备案。',
+    })
+    report.roadmap.push({
+      text: '【外汇通道】备齐继承权公证+完税证明+资产清算文件，向外管局申请"继承转移"类外汇额度。此通道独立于个人购汇额度。',
+      priority: 'informational',
+    })
+  }
+
+  // ---- Rule 11: 日本继承放弃3个月期限 ----
+  if ((assets.jp_assets.includes('jp_re') || assets.jp_assets.includes('jp_fin')) && input.heirs.heir_locations.includes('HEIR_THIRD')) {
+    report.warnings.push({
+      code: 'WARN_JP_RENUNCIATION_DEADLINE',
+      title: '日本法下继承放弃仅3个月期限',
+      detail:
+        '日本民法规定继承人须在知道继承开始后3个月内向家庭裁判所申请放弃继承（相続放棄）。中国法相对宽松但日本期限极严格。第三国继承人若不知晓此期限，可能在不知情下被视为接受继承并承担债务。',
+    })
+    report.roadmap.push({
+      text: '【日本方案】继承人（尤其第三国）须在知道被继承人去世后3个月内明确做出接受或放弃的决定并向日本家庭裁判所申报。',
+      priority: 'procedural',
+    })
+  }
+
+  // ---- Rule 12: 遗嘱形式效力 vs 实质效力两层审查 ----
+  if (document.doc_type === 'JP_HOLOGRAPH' || document.doc_type === 'JP_NOTARY') {
+    report.warnings.push({
+      code: 'WARN_WILL_TWO_LAYER_VALIDITY',
+      title: '遗嘱在中国使用须通过形式效力和实质效力两层审查',
+      detail:
+        '遗嘱形式效力（是否符合法定格式）：较宽松，符合立遗嘱时经常居所地/国籍/立遗嘱地任一法律即可（《法律适用法》第32条）。但实质效力（遗嘱内容是否有效）需符合立遗嘱时经常居所地或国籍法（第33条）。两层审查各自独立，形式有效不等于实质内容会被中国法院认可。',
+    })
+    report.roadmap.push({
+      text: '【合规要点】日本遗嘱在中国使用时，先做海牙认证确保形式有效，再请中国涉外律师审查实质内容是否符合中国法律（如必留份规定）。两层缺一不可。',
+      priority: 'procedural',
+    })
+  }
+
+  // ---- Rule 13: 2024年日本国内联络人制度 ----
+  if (assets.jp_assets.includes('jp_re') && input.identity.habitual_residence !== 'JP') {
+    report.warnings.push({
+      code: 'WARN_JP_CONTACT_PERSON',
+      title: '海外居民持有日本不动产须登记在日联络人',
+      detail:
+        '2024年4月起，在日本无常住地址的外国人（自然人及法人）持有日本不动产，须向法務局登记一名在日联络人（姓名+地址）。继承人如果本身不在日本居住，在办理继承过户时将面临此额外要求。',
+    })
+    report.roadmap.push({
+      text: '【日本方案】提前指定在日联络人（可为亲属、司法书士或税务师），在继承登记申请时一并提交联络人信息。',
+      priority: 'informational',
+    })
+  }
+
+  // ---- Rule 14: 中日判决互不承认策略 ----
+  if (report.blockers.length > 0 && (assets.cn_assets.length > 0 && assets.jp_assets.length > 0)) {
+    report.warnings.push({
+      code: 'INFO_NON_RECOGNITION_STRATEGY',
+      title: '中日民事判决互不承认——可利用对方判决作为"事实证据"',
+      detail:
+        '中国和日本之间无民事判决相互承认与执行条约。若某案等判例显示：中国法院虽不承认日本判决的既判力，但可接受其"事实认定"作为证据使用。策略意义：在两国分别启动程序时，先在一国取得有利判决，再在另一国将其作为事实证据提交，可大幅降低举证难度。',
+    })
+    report.roadmap.push({
+      text: '【诉讼策略】如涉及两国资产且有争议，优先在日本取得家庭裁判所判决（日本程序通常更标准化），再在中国法院引用其事实认定部分。',
+      priority: 'informational',
+    })
+  }
+
   // ---- 最终状态判定 + Roadmap 排序 ----
   if (report.blockers.length > 0) {
     report.status = 'RED'

@@ -13,6 +13,7 @@ export function CalculatorPanel({
   grandchildrenCount,
   parentsAlive,
   habitualResidence,
+  maritalRegime,
   hasWill,
   willType,
 }: {
@@ -21,6 +22,7 @@ export function CalculatorPanel({
   grandchildrenCount: number
   parentsAlive: number
   habitualResidence: 'CN' | 'JP' | ''
+  maritalRegime: 'CN_community' | 'JP_separate'
   hasWill: boolean
   willType: string
 }) {
@@ -44,6 +46,7 @@ export function CalculatorPanel({
     grandchildrenCount: grandchildrenCount || 0,
     parentsAlive,
     habitualResidence: habitualResidence === 'JP' ? 'JP' : 'CN',
+    maritalRegime: maritalRegime || 'CN_community',
     hasWill,
     willType: willType || 'none',
   }
@@ -95,6 +98,15 @@ export function CalculatorPanel({
       {/* 结果 */}
       <div className="border-t border-border">
         <div className="p-5">
+          {/* v2: 财产制度 + 遗产池说明 */}
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 leading-relaxed mb-3">
+            🏛 {result.estateNote}
+          </div>
+          {result.annualCostNote && (
+            <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 leading-relaxed mb-3">
+              {result.annualCostNote}
+            </div>
+          )}
           <p className="text-sm text-text-secondary leading-relaxed mb-4">{result.scenarioNote}</p>
 
           {/* 汇总卡 */}
