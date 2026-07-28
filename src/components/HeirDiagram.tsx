@@ -1,6 +1,6 @@
 // ============================================================
-// 中日双轨法定继承人关系图
-// 左侧：中国法定继承 | 右侧：日本法定继承
+// 中日双轨法定继承人关系图 v2
+// 以示例人物 + 故事化讲解替代抽象图表
 // ============================================================
 
 export interface HeirChartData {
@@ -16,104 +16,101 @@ export interface HeirChartData {
 
 interface Props {
   data: HeirChartData
-  totalValueLabel: string
+  totalValueLabel?: string
 }
 
 type Badge = 'minor' | 'missing' | 'incapacity' | 'mandatory' | 'ok'
 
-function badgeStyle(b: Badge): string {
+function badgeEmoji(b: Badge): string {
   switch (b) {
-    case 'minor': return 'bg-amber-100 text-amber-700 border-amber-300'
-    case 'missing': return 'bg-red-100 text-red-700 border-red-300'
-    case 'incapacity': return 'bg-red-100 text-red-700 border-red-300'
-    case 'mandatory': return 'bg-amber-100 text-amber-700 border-amber-300'
-    case 'ok': return 'bg-green-100 text-green-700 border-green-300'
+    case 'minor': return '🧒'
+    case 'missing': return '❓'
+    case 'incapacity': return '🏥'
+    case 'mandatory': return '⚖️'
+    case 'ok': return ''
   }
 }
 
-function badgeLabel(b: Badge): string {
-  switch (b) {
-    case 'minor': return '未成年'
-    case 'missing': return '失联'
-    case 'incapacity': return '限行'
-    case 'mandatory': return '必留份'
-    case 'ok': return '正常'
-  }
-}
+export function HeirDiagram({ data }: Props) {
+  // ---- 构建示例人物 ----
+  const residenceCN = data.habitual_residence === 'JP' ? '日本' : '中国'
 
-export function HeirDiagram({ data, totalValueLabel }: Props) {
-  // ---- 中国侧计算 ----
+  // 中国侧
   const cnFirstOrder: { label: string; badge: Badge }[] = []
   if (data.spouse_exists) cnFirstOrder.push({ label: '配偶', badge: 'ok' })
   for (let i = 0; i < data.children_count; i++) {
-    const isMinor = i < data.children_minor_count
-    cnFirstOrder.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, badge: isMinor ? 'minor' : 'ok' })
+    cnFirstOrder.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, badge: i < data.children_minor_count ? 'minor' : 'ok' })
   }
   for (let i = 0; i < data.parents_alive_count; i++) {
     cnFirstOrder.push({ label: i === 0 ? '母亲' : '父亲', badge: 'ok' })
   }
-  const cnTotalHeirs = cnFirstOrder.length
-  const cnSharePct = cnTotalHeirs > 0 ? Math.round(100 / cnTotalHeirs) : 0
+  const cnHeirCount = cnFirstOrder.length
+  const cnShare = cnHeirCount > 0 ? Math.round(100 / cnHeirCount) : 0
 
-  // 配偶先分一半的特殊说明
-  const spouseNote = data.spouse_exists
-    ? `配偶先从夫妻共同财产中分走 50%（不属于继承），剩余 50% 由 ${cnTotalHeirs} 位第一顺序继承人均分`
-    : `${cnTotalHeirs} 位第一顺序继承人均分`
-
-  // ---- 日本侧计算 ----
+  // 日本侧
   const hasChildren = data.children_count > 0
   const hasParents = data.parents_alive_count > 0
-
-  let jpHeirOrder: string
+  let jpOrderLabel = ''
   let jpHeirs: { label: string; sharePct: number; badge: Badge }[] = []
 
   if (data.spouse_exists && hasChildren) {
-    jpHeirOrder = '配偶 + 子女'
+    jpOrderLabel = '配偶 + 子女'
     jpHeirs.push({ label: '配偶', sharePct: 50, badge: 'ok' })
     for (let i = 0; i < data.children_count; i++) {
-      const isMinor = i < data.children_minor_count
-      jpHeirs.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, sharePct: Math.round(50 / data.children_count), badge: isMinor ? 'minor' : 'ok' })
+      jpHeirs.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, sharePct: Math.round(50 / data.children_count), badge: i < data.children_minor_count ? 'minor' : 'ok' })
     }
   } else if (data.spouse_exists && hasParents && !hasChildren) {
-    jpHeirOrder = '配偶 + 直系尊属（父母）'
-    jpHeirs.push({ label: '配偶', sharePct: Math.round(2 * 100 / 3), badge: 'ok' })
+    jpOrderLabel = '配偶 + 父母'
+    jpHeirs.push({ label: '配偶', sharePct: Math.round(200 / 3), badge: 'ok' })
     for (let i = 0; i < data.parents_alive_count; i++) {
       jpHeirs.push({ label: i === 0 ? '母亲' : '父亲', sharePct: Math.round(100 / 3 / data.parents_alive_count), badge: 'ok' })
     }
   } else if (data.spouse_exists && !hasChildren && !hasParents) {
-    jpHeirOrder = '配偶 + 兄弟姐妹（第三顺序）'
+    jpOrderLabel = '配偶 + 兄弟姐妹'
     jpHeirs.push({ label: '配偶', sharePct: 75, badge: 'ok' })
     jpHeirs.push({ label: '兄弟姐妹', sharePct: 25, badge: 'ok' })
   } else if (!data.spouse_exists && hasChildren) {
-    jpHeirOrder = '子女（无配偶）'
+    jpOrderLabel = '子女'
     for (let i = 0; i < data.children_count; i++) {
-      const isMinor = i < data.children_minor_count
-      jpHeirs.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, sharePct: Math.round(100 / data.children_count), badge: isMinor ? 'minor' : 'ok' })
+      jpHeirs.push({ label: `子女${data.children_count > 1 ? i + 1 : ''}`, sharePct: Math.round(100 / data.children_count), badge: i < data.children_minor_count ? 'minor' : 'ok' })
     }
   } else if (!data.spouse_exists && hasParents && !hasChildren) {
-    jpHeirOrder = '直系尊属（父母）'
+    jpOrderLabel = '父母'
     for (let i = 0; i < data.parents_alive_count; i++) {
       jpHeirs.push({ label: i === 0 ? '母亲' : '父亲', sharePct: Math.round(100 / data.parents_alive_count), badge: 'ok' })
     }
   } else {
-    jpHeirOrder = '无法定继承人信息'
+    jpOrderLabel = '待定'
   }
 
-  // 失联标记
+  // 失联扩散到非配偶
   if (data.has_missing_heir) {
     jpHeirs = jpHeirs.map((h) => (h.label !== '配偶' ? { ...h, badge: 'missing' as Badge } : h))
   }
 
   const isEmpty = cnFirstOrder.length === 0 && jpHeirs.length === 0
 
+  // ---- 核心洞察 ----
+  const cnResult = data.spouse_exists
+    ? `配偶先从夫妻共同财产中分走 50%（这不是继承，是财产分割），剩余 50% 由 ${cnHeirCount} 位第一顺序继承人每人分得约 ${cnShare}%。`
+    : `${cnHeirCount} 位第一顺序继承人每人分得 ${cnShare}%。`
+
+  const jpKeyDiff = data.spouse_exists && data.children_count > 0
+    ? `配偶固定拿 50%，${data.children_count} 名子女平分剩余 50%。注意：日本是分别财产制——登记在被继承人名下的全部进入遗产池，配偶不能像中国那样先分走一半。`
+    : '日本法下配偶份额随其他继承人类型变化——与子女各半、与父母拿三分之二、与兄弟姐妹拿四分之三。'
+
+  const criticalWarning = data.spouse_exists && data.habitual_residence === 'JP'
+    ? '⚠️ 住在日本的家庭最容易被这个差异坑到：以为像中国一样配偶自动拿一半，实际上日本法下配偶只能通过继承取得份额，且需全体继承人配合才能完成不动产过户。'
+    : ''
+
   return (
     <div className="bg-surface-card border border-border rounded-xl overflow-hidden">
       <div className="bg-neutral-50 border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold text-text-primary">
-          📐 法定继承人关系与分配图
+          📐 如果不做任何安排，资产会怎么分？
         </h3>
         <p className="text-xs text-text-muted mt-0.5">
-          被继承人常住{data.habitual_residence === 'JP' ? '日本' : '中国'} · {totalValueLabel}
+          以下是根据你在问卷中填写的信息，模拟法定继承的默认结果
         </p>
       </div>
 
@@ -122,167 +119,187 @@ export function HeirDiagram({ data, totalValueLabel }: Props) {
           请先在"继承人画像"步骤中填写继承人数量和分布信息
         </div>
       ) : (
-        <div className="p-5">
-          <div className="grid sm:grid-cols-2 gap-5">
-            {/* ====== 中国侧 ====== */}
-            <div className="border border-red-200 rounded-xl overflow-hidden">
-              <div className="bg-red-50 px-4 py-2 border-b border-red-200">
-                <span className="text-sm font-semibold text-red-deep">🇨🇳 中国法定继承</span>
-                <span className="text-xs text-red-600 ml-2">《民法典》第1127条</span>
-              </div>
-              <div className="p-4">
-                {/* 被继承人节点 */}
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-neutral-800 text-white flex flex-col items-center justify-center text-xs">
-                    <span>被继承人</span>
-                    <span className="font-bold">{totalValueLabel}</span>
-                  </div>
-                </div>
-                {/* 向下箭头 */}
-                <div className="flex justify-center mb-3">
-                  <svg width="2" height="20"><line x1="1" y1="0" x2="1" y2="20" stroke="#d1d5db" strokeWidth="2"/></svg>
-                </div>
-                {/* 第一顺序继承人 */}
-                <div className="text-center mb-2">
-                  <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">第一顺序</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {cnFirstOrder.map((h, i) => (
-                    <HeirBadge key={i} label={h.label} sharePct={cnSharePct} badge={h.badge} side="cn" />
-                  ))}
-                </div>
-                {/* 孙辈（非法定） */}
-                {data.grandchildren_count > 0 && (
-                  <div className="mt-3 pt-3 border-t border-dashed border-red-200">
-                    <div className="text-center mb-2">
-                      <span className="text-[11px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">非法定 · 须遗嘱指定</span>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {Array.from({ length: data.grandchildren_count }).map((_, i) => (
-                        <HeirBadge key={i} label={`孙辈${data.grandchildren_count > 1 ? i + 1 : ''}`} sharePct={0} badge={'ok'} side="cn" />
-                      ))}
-                    </div>
-                    <p className="text-[11px] text-blue-700 text-center mt-2">
-                      💡 孙辈非法定继承人。须通过遗嘱/遗赠明确指定，建议设立信托或附条件遗赠（如年满25岁方可取得）。
-                    </p>
-                  </div>
-                )}
+        <div className="p-5 space-y-5">
+          {/* === 第1步：看清谁有份 === */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-neutral-900 text-white text-xs flex items-center justify-center font-bold">1</span>
+              <h4 className="text-sm font-semibold text-text-primary">谁有资格继承？（法定继承人清单）</h4>
+            </div>
 
-                {/* 说明 */}
-                <div className="mt-4 bg-red-50/50 rounded-lg p-3 text-xs text-text-secondary leading-relaxed">
-                  {spouseNote}
-                  {data.children_minor_count > 0 && (
-                    <p className="mt-1 text-amber-700">
-                      ⚠️ {data.children_minor_count} 名未成年继承人需法定监护人代为行使继承权。监护人须经法院/公证处确认。
-                    </p>
-                  )}
-                  {data.has_missing_heir && (
-                    <p className="mt-1 text-red-700">
-                      🚫 失联继承人导致继承权公证无法完成全部签字，需法院公告或另行诉讼。
-                    </p>
-                  )}
+            <p className="text-xs text-text-secondary leading-relaxed mb-4">
+              被继承人常住{residenceCN}。在不做任何文书安排的情况下，以下人员依法享有继承权。
+            </p>
+
+            {/* 双列继承人清单 */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {/* 中国侧 */}
+              <div className="border border-red-200 rounded-xl overflow-hidden">
+                <div className="bg-red-50 px-3 py-2 border-b border-red-200 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-red-deep">🇨🇳 中国法律</span>
+                  <span className="text-[11px] text-red-500">《民法典》第1127条</span>
+                </div>
+                <div className="p-3">
+                  <p className="text-xs text-text-muted mb-2">
+                    第一顺序继承人均分{data.spouse_exists ? '（配偶先从共同财产中分走一半）' : ''}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {cnFirstOrder.map((h, i) => (
+                      <span key={i} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${
+                        h.badge === 'minor' ? 'bg-amber-50 border-amber-300 text-amber-700' :
+                        h.badge === 'missing' ? 'bg-red-50 border-red-300 text-red-700' :
+                        'bg-white border-border text-text-primary'
+                      }`}>
+                        {badgeEmoji(h.badge)}{h.label} {cnShare}%
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-text-muted mt-2 leading-relaxed">{cnResult}</p>
+                </div>
+              </div>
+
+              {/* 日本侧 */}
+              <div className="border border-amber-200 rounded-xl overflow-hidden">
+                <div className="bg-amber-50 px-3 py-2 border-b border-amber-200 flex items-center justify-between">
+                  <span className="text-sm font-semibold text-amber-deep">🇯🇵 日本法律</span>
+                  <span className="text-[11px] text-amber-600">民法 第887-890条</span>
+                </div>
+                <div className="p-3">
+                  <p className="text-xs text-text-muted mb-2">
+                    继承顺序：{jpOrderLabel}
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {jpHeirs.map((h, i) => (
+                      <span key={i} className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${
+                        h.badge === 'minor' ? 'bg-amber-50 border-amber-300 text-amber-700' :
+                        h.badge === 'missing' ? 'bg-red-50 border-red-300 text-red-700' :
+                        'bg-white border-border text-text-primary'
+                      }`}>
+                        {badgeEmoji(h.badge)}{h.label} {h.sharePct}%
+                      </span>
+                    ))}
+                  </div>
+                  <p className="text-[11px] text-text-muted mt-2 leading-relaxed">{jpKeyDiff}</p>
                 </div>
               </div>
             </div>
 
-            {/* ====== 日本侧 ====== */}
-            <div className="border border-amber-200 rounded-xl overflow-hidden">
-              <div className="bg-amber-50 px-4 py-2 border-b border-amber-200">
-                <span className="text-sm font-semibold text-amber-deep">🇯🇵 日本法定继承</span>
-                <span className="text-xs text-amber-600 ml-2">民法 第887-890条</span>
+            {/* 关键差异提示 */}
+            {data.spouse_exists && (
+              <div className="mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  <strong>🔍 关键发现：</strong>
+                  中国法下配偶先拿回自己的 50% 共同财产再参与继承；日本法下配偶没有这个权利——登记在被继承人名下的全部进入遗产池。
+                  {data.habitual_residence === 'JP' && ' 你常住日本，这个差异对你影响最大。'}
+                </p>
               </div>
-              <div className="p-4">
-                {/* 被继承人节点 */}
-                <div className="flex justify-center mb-4">
-                  <div className="w-16 h-16 rounded-full bg-neutral-800 text-white flex flex-col items-center justify-center text-xs">
-                    <span>被相続人</span>
-                    <span className="font-bold">{totalValueLabel}</span>
-                  </div>
-                </div>
-                <div className="flex justify-center mb-3">
-                  <svg width="2" height="20"><line x1="1" y1="0" x2="1" y2="20" stroke="#d1d5db" strokeWidth="2"/></svg>
-                </div>
-                {/* 继承人顺序 */}
-                <div className="text-center mb-2">
-                  <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{jpHeirOrder}</span>
-                </div>
-                <div className="flex flex-wrap justify-center gap-2">
-                  {jpHeirs.map((h, i) => (
-                    <HeirBadge key={i} label={h.label} sharePct={h.sharePct} badge={h.badge} side="jp" />
-                  ))}
-                </div>
-                {/* 说明 */}
-                <div className="mt-4 bg-amber-50/50 rounded-lg p-3 text-xs text-text-secondary leading-relaxed">
-                  {data.spouse_exists && (
-                    <p>配偶固定为继承人，份额依其他继承人类型变化。配偶享有最高 1.6 亿日元的继承税抵免。</p>
-                  )}
-                  {data.children_count === 0 && data.parents_alive_count > 0 && (
-                    <p>无子女时，父母（直系尊属）进入第一继承顺序。</p>
-                  )}
-                  {data.children_minor_count > 0 && (
-                    <p className="mt-1 text-amber-700">
-                      ⚠️ 未成年人继承需日本家庭裁判所选任「特別代理人」，额外耗时 2-4 个月，费用 ¥5-15 万 JPY。
-                    </p>
-                  )}
-                  {data.has_missing_heir && (
-                    <p className="mt-1 text-red-700">
-                      🚫 日本不动产过户需<b>全体继承人盖章 + 印鑑証明書</b>。失联继承人导致遗产分割协议书无法签署，不动产死锁。
-                    </p>
-                  )}
-                  {!data.has_missing_heir && !data.has_incapacity_heir && data.children_count > 0 && data.children_minor_count === 0 && (
-                    <p className="mt-1 text-green-700">
-                      ✅ 成年子女可独立签署遗产分割协议书，流程相对顺畅。
-                    </p>
-                  )}
-                </div>
+            )}
+          </div>
+
+          {/* === 第2步：两国规则打架的后果 === */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-neutral-900 text-white text-xs flex items-center justify-center font-bold">2</span>
+              <h4 className="text-sm font-semibold text-text-primary">两国规则不一样，会出什么问题？</h4>
+            </div>
+
+            <div className="space-y-3">
+              {/* 问题1 */}
+              <div className="border border-red-200 rounded-lg p-3 bg-red-50/50">
+                <p className="text-xs font-medium text-red-800 mb-1">
+                  🚫 问题一：继承权"各说各话"
+                </p>
+                <p className="text-xs text-text-secondary leading-relaxed">
+                  {data.habitual_residence === 'JP'
+                    ? '你常住日本，名下可能有中国房产。中国法律规定不动产继承适用中国法——但中国房管局不认日本出具的继承权证明。你需要先在日本取得继承相关文书，再经过海牙认证+翻译质证，才能在中国办手续。反过来也一样。'
+                    : '如果你在日本有房产，日本法務局不认中国公证处出具的继承权公证书。你需要在中国办完公证后，再走日本外务省的认证流程。'}
+                </p>
               </div>
+
+              {/* 问题2 */}
+              {data.has_missing_heir && (
+                <div className="border border-red-200 rounded-lg p-3 bg-red-50/50">
+                  <p className="text-xs font-medium text-red-800 mb-1">
+                    🚫 问题二：继承人失联 = 绝对死锁
+                  </p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    日本不动产过户需要全体继承人在《遗产分割协议书》上盖章并附印鑑証明書。有继承人失联或拒绝配合的情况下，该不动产在法律上无法过户，只能通过法院诉讼解决——耗时 1-3 年，费用数十万日元起。
+                  </p>
+                </div>
+              )}
+
+              {/* 问题3 */}
+              {data.children_minor_count > 0 && (
+                <div className="border border-amber-200 rounded-lg p-3 bg-amber-50/50">
+                  <p className="text-xs font-medium text-amber-800 mb-1">
+                    ⚠️ 问题三：未成年继承人需要特别代理人
+                  </p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    你有 {data.children_minor_count} 名未成年继承人。在日本法下，未成年人不能独立签署遗产分割协议，需要向家庭裁判所申请选任"特別代理人"。这个程序独立于主继承流程，额外耗时 2-4 个月，费用 5-15 万日元。
+                  </p>
+                </div>
+              )}
+
+              {/* 问题4 */}
+              {data.grandchildren_count > 0 && (
+                <div className="border border-blue-200 rounded-lg p-3 bg-blue-50/50">
+                  <p className="text-xs font-medium text-blue-800 mb-1">
+                    💡 问题四：孙辈不在法定继承序列中
+                  </p>
+                  <p className="text-xs text-text-secondary leading-relaxed">
+                    你想把资产留给 {data.grandchildren_count} 名孙辈，但中日两国的法定继承都不包含孙辈（除非其父母先于被继承人去世，触发代位继承）。要实现隔代传承，<strong>必须有明确的遗嘱或遗赠文书</strong>，口头意愿没有法律效力。
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* 底部汇总 */}
-          <div className="mt-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <MiniStat label="中国侧继承人" value={`${cnFirstOrder.length} 人`} />
-            <MiniStat label="日本侧继承人" value={`${jpHeirs.length} 人`} />
-            <MiniStat label="中国侧每人份额" value={`${cnSharePct}%`} />
-            <MiniStat label="日本继承税起征" value={data.spouse_exists && data.children_count > 0 ? `3,000万+600万×${1 + data.children_count}` : '3,000万 JPY'} />
+          {/* === 第3步：你可以做什么 === */}
+          <div>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="w-6 h-6 rounded-full bg-neutral-900 text-white text-xs flex items-center justify-center font-bold">3</span>
+              <h4 className="text-sm font-semibold text-text-primary">提前规划可以避免哪些麻烦？</h4>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="border border-green-200 rounded-lg p-3 bg-green-50/50">
+                <p className="text-xs font-medium text-green-800 mb-1">✅ 如果提前立好公证遗嘱</p>
+                <ul className="text-xs text-text-secondary space-y-1">
+                  <li>· 中国资产用中国公证遗嘱，国内程序无需海牙认证</li>
+                  <li>· 日本资产用日本公正证书遗嘱，指定"遗言执行者"</li>
+                  <li>· 绕过全体继承人盖章签字的死锁</li>
+                  <li>· 孙辈继承：通过遗赠明确指定，避免法定继承的"默认分配"</li>
+                </ul>
+              </div>
+              <div className="border border-red-200 rounded-lg p-3 bg-red-50/50">
+                <p className="text-xs font-medium text-red-800 mb-1">❌ 如果什么都不做</p>
+                <ul className="text-xs text-text-secondary space-y-1">
+                  <li>· 继承人需要在中日两地各自办理全套公证+认证</li>
+                  <li>· 日本不动产：全体签字盖章，缺一不可</li>
+                  <li>· 一旦有继承人失联或分歧，资产冻结 1-3 年</li>
+                  <li>· 孙辈在法律上拿不到一分钱</li>
+                </ul>
+              </div>
+            </div>
+
+            {criticalWarning && (
+              <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
+                <p className="text-xs text-red-800 leading-relaxed">{criticalWarning}</p>
+              </div>
+            )}
           </div>
         </div>
       )}
 
       {/* 图例 */}
-      <div className="border-t border-border px-4 py-2 flex flex-wrap gap-3 text-[11px] text-text-muted">
-        {(['minor', 'missing', 'incapacity', 'mandatory', 'ok'] as Badge[]).map((b) => (
-          <span key={b} className="flex items-center gap-1">
-            <span className={`inline-block w-2.5 h-2.5 rounded-full border ${badgeStyle(b).split(' ')[0]} ${badgeStyle(b).split(' ')[1]}`} />
-            {badgeLabel(b)}
-          </span>
-        ))}
-        <span className="ml-auto">中日继承规则差异巨大，需分立架构应对</span>
-      </div>
-    </div>
-  )
-}
-
-function HeirBadge({ label, sharePct, badge, side }: { label: string; sharePct: number; badge: Badge; side: 'cn' | 'jp' }) {
-  const bCls = badgeStyle(badge)
-  return (
-    <div className={`relative border rounded-lg px-3 py-2 text-center min-w-[80px] ${bCls} ${side === 'cn' ? 'border-red-200' : 'border-amber-200'}`}>
-      <div className="text-xs font-medium text-text-primary">{label}</div>
-      <div className="text-lg font-bold text-text-primary">{sharePct}%</div>
-      {badge !== 'ok' && (
-        <span className={`text-[10px] px-1 py-0.5 rounded-full ${badgeStyle(badge)} mt-0.5 inline-block`}>
-          {badgeLabel(badge)}
-        </span>
+      {!isEmpty && (
+        <div className="border-t border-border px-4 py-2 flex flex-wrap gap-3 text-[11px] text-text-muted">
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-amber-100 border border-amber-300" /> 未成年人</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-red-100 border border-red-300" /> 失联/不配合</span>
+          <span className="flex items-center gap-1"><span className="w-2.5 h-2.5 rounded-full bg-blue-100 border border-blue-300" /> 非法定（需遗嘱）</span>
+          <span className="ml-auto">提前规划的核心不是"分给谁"——是"让分的过程不卡住"</span>
+        </div>
       )}
-    </div>
-  )
-}
-
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="bg-surface border border-border rounded-lg p-3 text-center">
-      <div className="text-[11px] text-text-muted">{label}</div>
-      <div className="text-sm font-semibold text-text-primary mt-0.5">{value}</div>
     </div>
   )
 }
