@@ -122,7 +122,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
   return goals
 }
 
-export function GoalPlanner({ input }: { input: ComplianceInput }) {
+export function GoalPlanner({ input, onUnlock }: { input: ComplianceInput; onUnlock: (name: string) => void }) {
   const goals = buildGoals(input)
 
   return (
@@ -191,7 +191,10 @@ export function GoalPlanner({ input }: { input: ComplianceInput }) {
         <p className="text-sm text-text-secondary mb-3">
           以上为方案框架预览。完整版包含针对你具体资产和继承人情况的详细执行方案。
         </p>
-        <button className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors">
+        <button
+          onClick={() => onUnlock('传承方案设计')}
+          className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+        >
           获取完整方案设计 →
         </button>
       </div>

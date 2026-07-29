@@ -9,10 +9,12 @@ export function AffordabilityCheck({
   hasRealEstate,
   hasJPAssets,
   hasCNFinancial,
+  onUnlock,
 }: {
   hasRealEstate: boolean
   hasJPAssets: boolean
   hasCNFinancial: boolean
+  onUnlock: (name: string) => void
 }) {
   const [estateValue, setEstateValue] = useState(500)
   const [cashAvailable, setCashAvailable] = useState(50)
@@ -138,7 +140,10 @@ export function AffordabilityCheck({
         <p className="text-sm text-text-secondary mb-3">
           完整版提供精确到每个继承人的费用分项和支付方案。
         </p>
-        <button className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors">
+        <button
+          onClick={() => onUnlock('继承可行性评估')}
+          className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
+        >
           解锁完整分析 →
         </button>
       </div>

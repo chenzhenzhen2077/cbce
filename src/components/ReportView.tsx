@@ -1,9 +1,11 @@
 import type { ComplianceInput, ReportOutput } from '../types'
 import { CN_ASSET_LABELS, JP_ASSET_LABELS, HEIR_LOCATION_LABELS, DOC_TYPE_LABELS } from '../types'
+import { useState, useCallback } from 'react'
 import { downloadPDF } from '../utils/pdf'
 import { HeirDiagram } from './HeirDiagram'
 import { GoalPlanner } from './GoalPlanner'
 import { AffordabilityCheck } from './AffordabilityCheck'
+import { UnlockModal } from './UnlockModal'
 
 function generateSummary(input: ComplianceInput, report: ReportOutput): string {
   const parts: string[] = []
@@ -116,13 +118,17 @@ export function ReportView({
   onReset: () => void
 }) {
   const cfg = statusConfig[report.status]
+  const [pdfLoading, setPdfLoading] = useState(false)
+  const [unlockModule, setUnlockModule] = useState('')
 
-  const handleDownload = () => {
-    downloadPDF(input, report)
-  }
+  const handleDownload = useCallback(async () => {
+    setPdfLoading(true)
+    await downloadPDF('cbc-report', `CBCE_诊断报告_${Date.now().toString(36).toUpperCase()}.pdf`)
+    setPdfLoading(false)
+  }, [])
 
   return (
-    <div className="space-y-6 animate-in fade-in">
+    <div id="cbc-report" className="space-y-6 animate-in fade-in bg-white">
       {/* Planning mode banner */}
       <div className="bg-surface-card border border-border rounded-xl p-4">
         <p className="text-sm text-text-secondary">
@@ -140,7 +146,7 @@ export function ReportView({
             onClick={handleDownload}
             className="px-4 py-2 bg-white border border-border rounded-lg text-sm font-medium hover:bg-neutral-50 transition-colors"
           >
-            📥 导出 PDF
+            {pdfLoading ? '⏳ 生成中...' : '📥 导出 PDF'}
           </button>
         </div>
         <p className="text-sm text-text-secondary mt-2">{cfg.desc}</p>
@@ -286,11 +292,12 @@ export function ReportView({
         </div>
 
         <div className="space-y-5">
-          <GoalPlanner input={input} />
+          <GoalPlanner input={input} onUnlock={(name) => setUnlockModule(name)} />
           <AffordabilityCheck
             hasRealEstate={input.assets.cn_assets.includes('cn_re') || input.assets.jp_assets.includes('jp_re')}
             hasJPAssets={input.assets.jp_assets.length > 0}
             hasCNFinancial={input.assets.cn_assets.includes('cn_fin')}
+            onUnlock={(name) => setUnlockModule(name)}
           />
         </div>
       </div>
@@ -322,9 +329,10 @@ export function ReportView({
       <div className="flex gap-3 pt-2">
         <button
           onClick={handleDownload}
-          className="flex-1 px-6 py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors"
+          disabled={pdfLoading}
+          className="flex-1 px-6 py-3 bg-neutral-900 text-white rounded-lg font-medium hover:bg-neutral-800 transition-colors disabled:opacity-50"
         >
-          导出 PDF 诊断报告
+          {pdfLoading ? '正在生成 PDF...' : '导出 PDF 诊断报告'}
         </button>
         <button
           onClick={onReset}
@@ -333,6 +341,13 @@ export function ReportView({
           重新诊断
         </button>
       </div>
+
+      {/* 解锁弹窗 */}
+      <UnlockModal
+        open={unlockModule !== ''}
+        onClose={() => setUnlockModule('')}
+        moduleName={unlockModule}
+      />
     </div>
   )
 }
