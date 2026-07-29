@@ -1,11 +1,17 @@
 // ============================================================
-// 法定继承模拟计算引擎 v2
-// 基于法规/判例核查修正：
-// - 登録免許税 土地1.5% 建筑2%（非0.4%）
-// - 新增不動産取得税3-4% + 固定資産税1.4%/年
-// - 区分中日婚姻财产制度（共同财产 vs 分别财产）
-// - 印紙税按合同分档
-// 所有金额：万元 CNY（日本侧同时标万円）
+// 法定继承模拟计算引擎 v3
+// ⚠️ 重要：所有税费为参考框架和区间估算，不构成税务意见。
+//    实际费用因个案情况、地方政策、汇率波动而异。
+//    请咨询持牌税理士/税务师确认具体数字。
+//
+// 参考数据源（公开法定税率/费率）：
+// - 登録免許税 土地1.5% 建筑2%
+// - 不動産取得税 约3-4%
+// - 固定資産税 约1.4%/年 + 都市計画税 约0.3%/年
+// - 相続税 10%-55% 超额累进（基础扣除后）
+// - 印紙税 按合同金额分档 ¥200-60,000
+// - 中国继承公证费 0.5%-1.2% 分段累进
+// 所有金额：万元 CNY（日本侧同时标万円，按 1 CNY ≈ 20 JPY 参考汇率）
 // ============================================================
 
 export interface CalcInput {
@@ -51,12 +57,13 @@ export interface CalcResult {
   cnAssetValue: number
   jpAssetValue: number
   jpAssetValueJPY: number
-  estateNote: string          // v2: 遗产总额计算说明（区分财产制）
+  estateNote: string
   heirs: HeirAllocation[]
   globalFeesTotal: number
-  annualCostNote: string       // v2: 年度持有成本提醒
+  annualCostNote: string
   scenarioNote: string
   comparisonNote: string
+  disclaimer: string            // v3: 免责声明
 }
 
 // ---- 日本继承税速算（万円单位）----
@@ -278,5 +285,6 @@ export function calculate(input: CalcInput): CalcResult {
     annualCostNote,
     scenarioNote,
     comparisonNote,
+    disclaimer: '⚠️ 以上所有费用和税费均为基于公开法定税率/费率的参考估算框架，不构成税务意见。实际金额因个案情况、资产评估方式、地方政策差异和汇率波动而异。请务必咨询持牌税理士/税务师确认具体数字。',
   }
 }

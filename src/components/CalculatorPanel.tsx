@@ -120,6 +120,11 @@ export function CalculatorPanel({
           <div className="bg-green-50 border border-green-100 rounded-lg p-3 text-sm text-green-800 leading-relaxed mb-2">
             💡 {result.comparisonNote}
           </div>
+
+          {/* v3: 税务免责 */}
+          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-xs text-red-700 leading-relaxed mb-2">
+            {result.disclaimer}
+          </div>
         </div>
 
         {/* 各继承人明细 */}
