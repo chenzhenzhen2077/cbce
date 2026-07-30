@@ -3,8 +3,9 @@
 // ============================================================
 
 export function IntroPage({ onStart, largeFont, onToggleFont }: { onStart: () => void; largeFont: boolean; onToggleFont: () => void }) {
+  // largeFont 仅用于按钮状态，实际放大由 html.large-font CSS 规则驱动
   return (
-    <div className={`min-h-screen flex flex-col ${largeFont ? 'large-font' : ''}`}>
+    <div className="min-h-screen flex flex-col">
       {/* 顶部大字切换 */}
       <div className="flex justify-end px-4 pt-4">
         <button onClick={onToggleFont}

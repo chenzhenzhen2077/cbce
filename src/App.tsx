@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { ComplianceInput, ReportOutput, Step, PreAssessmentInput } from './types'
 import { evaluatePreAssessment } from './types'
 import { runComplianceRules } from './engine/rules'
@@ -29,6 +29,10 @@ export default function App() {
   const [started, setStarted] = useState(false)
   const [largeFont, setLargeFont] = useState(false)
   const [step, setStep] = useState<Step>('pre')
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('large-font', largeFont)
+  }, [largeFont])
   const [input, setInput] = useState<ComplianceInput>(initialInput)
   const [report, setReport] = useState<ReportOutput | null>(null)
   const [preBlocked, setPreBlocked] = useState(false)
@@ -87,7 +91,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className={`max-w-3xl mx-auto px-4 py-6 ${largeFont ? 'large-font' : ''}`}>
+      <main className="max-w-3xl mx-auto px-4 py-6">
         {report ? (
           <ReportView report={report} input={input} onReset={handleReset} />
         ) : preBlocked ? (
