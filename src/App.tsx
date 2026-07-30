@@ -27,6 +27,7 @@ const initialInput: ComplianceInput = {
 
 export default function App() {
   const [started, setStarted] = useState(false)
+  const [largeFont, setLargeFont] = useState(false)
   const [step, setStep] = useState<Step>('pre')
   const [input, setInput] = useState<ComplianceInput>(initialInput)
   const [report, setReport] = useState<ReportOutput | null>(null)
@@ -57,7 +58,7 @@ export default function App() {
   }
 
   if (!started) {
-    return <IntroPage onStart={() => setStarted(true)} />
+    return <IntroPage onStart={() => setStarted(true)} largeFont={largeFont} onToggleFont={() => setLargeFont(!largeFont)} />
   }
 
   return (
@@ -72,13 +73,21 @@ export default function App() {
               程序合规诊断与路径导航工具
             </p>
           </div>
-          <span className="text-xs text-text-muted bg-surface px-2 py-1 rounded-full shrink-0 ml-2">
-            CBCE v1.0
-          </span>
+          <div className="flex items-center gap-2 shrink-0 ml-2">
+            <button
+              onClick={() => setLargeFont(!largeFont)}
+              className={`text-xs px-2 py-1 rounded-full border transition-colors ${largeFont ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-text-muted border-border hover:border-neutral-400'}`}
+            >
+              {largeFont ? '大字 ✓' : '大字'}
+            </button>
+            <span className="text-xs text-text-muted bg-surface px-2 py-1 rounded-full">
+              v1.0
+            </span>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-3xl mx-auto px-4 py-6">
+      <main className={`max-w-3xl mx-auto px-4 py-6 ${largeFont ? 'text-lg' : ''}`}>
         {report ? (
           <ReportView report={report} input={input} onReset={handleReset} />
         ) : preBlocked ? (

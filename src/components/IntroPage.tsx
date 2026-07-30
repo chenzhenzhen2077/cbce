@@ -2,9 +2,17 @@
 // 引导首页 —— 告诉用户这个工具干什么、怎么用
 // ============================================================
 
-export function IntroPage({ onStart }: { onStart: () => void }) {
+export function IntroPage({ onStart, largeFont, onToggleFont }: { onStart: () => void; largeFont: boolean; onToggleFont: () => void }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={`min-h-screen flex flex-col ${largeFont ? 'text-lg' : ''}`}>
+      {/* 顶部大字切换 */}
+      <div className="flex justify-end px-4 pt-4">
+        <button onClick={onToggleFont}
+          className={`text-xs px-2.5 py-1 rounded-full border ${largeFont ? 'bg-neutral-900 text-white border-neutral-900' : 'bg-white text-text-muted border-border'}`}>
+          {largeFont ? '大字 ✓' : '大字'}
+        </button>
+      </div>
+
       {/* 主视觉区 */}
       <div className="flex-1 flex flex-col items-center justify-center px-5 py-10 text-center">
         {/* 图标 */}
