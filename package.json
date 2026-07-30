@@ -11,7 +11,7 @@
     "predeploy": "npm run build",
     "deploy": "gh-pages -d dist"
   },
-  "homepage": "https://github.com/YOUR_USERNAME/YOUR_REPO#readme",
+  "homepage": "https://chenzhenzhen2077.github.io/cbce",
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "html2canvas": "^1.4.1",
