@@ -87,7 +87,7 @@ export default function App() {
         </div>
       </header>
 
-      <main className={`max-w-3xl mx-auto px-4 py-6 ${largeFont ? 'text-lg' : ''}`}>
+      <main className={`max-w-3xl mx-auto px-4 py-6 ${largeFont ? 'large-font' : ''}`}>
         {report ? (
           <ReportView report={report} input={input} onReset={handleReset} />
         ) : preBlocked ? (

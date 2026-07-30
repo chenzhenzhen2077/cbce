@@ -4,7 +4,7 @@
 
 export function IntroPage({ onStart, largeFont, onToggleFont }: { onStart: () => void; largeFont: boolean; onToggleFont: () => void }) {
   return (
-    <div className={`min-h-screen flex flex-col ${largeFont ? 'text-lg' : ''}`}>
+    <div className={`min-h-screen flex flex-col ${largeFont ? 'large-font' : ''}`}>
       {/* 顶部大字切换 */}
       <div className="flex justify-end px-4 pt-4">
         <button onClick={onToggleFont}
