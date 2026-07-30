@@ -45,13 +45,9 @@ function buildGoals(input: ComplianceInput): Goal[] {
         hasMissing ? '遗产分割方案 + 替代继承人条款（如某继承人无法配合，资产如何处理）' : '',
       ].filter(Boolean),
       procedures: [
-        hasCN ? '① 预约公证处，携带身份证+房产证/资产证明+继承人身份信息' : '',
-        hasCN ? '② 公证员面谈，确认遗嘱内容是本人真实意愿' : '',
-        hasCN ? '③ 签署公证遗嘱，公证处存档一份' : '',
-        hasJP ? '④ 预约日本公证人（公証人），准备资产清单和继承人信息' : '',
-        hasJP ? '⑤ 公证人面谈，由公证人根据口述制作公正证书' : '',
-        hasJP ? '⑥ 公证人保管遗嘱正本' : '',
-        '⑦ 告知可信任的家人或执行人遗嘱存放位置',
+        hasCN ? '前往中国公证处办理公证遗嘱：携带身份证、房产证/资产证明，公证员面谈确认意愿后签署，公证处存档' : '',
+        hasJP ? '前往日本公证人（公証人）处办理公正证书遗嘱：提供资产清单和继承人信息，公证人根据口述制作并保管' : '',
+        '告知可信任的家人或遗嘱执行人遗嘱的存放位置和提取方式',
       ].filter(Boolean),
       watchOut: hasMissing
         ? '⚠️ 有失联继承人：遗嘱中须明确"如某继承人无法在X个月内配合办理，其继承份额如何处理"，否则即使有遗嘱，不动产过户仍可能卡住。'
@@ -78,12 +74,11 @@ function buildGoals(input: ComplianceInput): Goal[] {
         '建议：同时咨询中国税务师 + 日本税理士确认具体税负',
       ].filter(Boolean),
       procedures: [
-        '① 盘点全部资产，按国家/类别整理清单',
-        hasRE ? '② 获取不动产的评估价值（中国：房产证登记价；日本：固定資産税評価額）' : '',
-        '③ 计算法定继承下的预估税费 → 与分立架构对比',
-        isJP ? '④ 如配偶为主要继承人，确认日本配偶税收抵免适用条件（最高1.6亿JPY）' : '',
-        '⑤ 设立分立遗嘱，将两国资产程序分离',
-        '⑥ 定期审视：税法可能有变，每2-3年复查一次',
+        '盘点全部资产，按国家和类别整理清单' + (hasRE ? '；获取不动产评估价值（中国看房产证登记价，日本看固定資産税評価額）' : ''),
+        '对比法定继承与分立架构的预估费用差异',
+        isJP ? '如配偶为主要继承人，确认日本配偶税收抵免适用条件（最高1.6亿日元免税额度）' : '',
+        '设立分立遗嘱，将两国资产程序分离，各自独立执行',
+        '每2-3年定期复查，税法可能调整',
       ].filter(Boolean),
       watchOut: '⚠️ 税务建议仅供参考，请咨询持牌税理士/税务师确认具体数字。尤其日本继承税超额累进（10%-55%），高净值家庭务必提前规划。另外，继承人能否"垫付得起"税费也是关键——详见下方"继承可行性评估"。',
     },
@@ -108,11 +103,10 @@ function buildGoals(input: ComplianceInput): Goal[] {
         '资产清单（按"需签字"和"不需签字"分类）',
       ].filter(Boolean),
       procedures: [
-        hasCN ? '① 中国公证处：一次面谈，完成公证遗嘱' : '',
-        hasJP ? '② 日本公证人：一次预约，完成公正证书遗嘱' : '',
-        hasJP ? '③ 指定遗言执行者（可为亲属、司法书士或律师）' : '',
-        '④ 告知继承人遗嘱存放位置和执行人联系方式',
-        '⑤ 每2-3年复查一次，确认资产和继承人情况未变',
+        hasCN ? '前往中国公证处办理公证遗嘱（一次面谈即可完成）' : '',
+        hasJP ? '前往日本公证人处办理公正证书遗嘱（一次预约即可完成）并指定遗言执行者' : '',
+        '告知继承人遗嘱存放位置和遗嘱执行人联系方式',
+        '每2-3年复查一次，确认资产和继承人情况无重大变化',
       ].filter(Boolean),
       watchOut: hasMissing
         ? '⚠️ 有失联继承人时，即使流程最简方案也需要预留"替代方案"——如果某个继承人无法联系到，资产如何处置？建议在遗嘱中明确替代条款。'
@@ -123,7 +117,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
   return goals
 }
 
-export function GoalPlanner({ input }: { input: ComplianceInput; onUnlock?: (name: string) => void }) {
+export function GoalPlanner({ input }: { input: ComplianceInput }) {
   const goals = buildGoals(input)
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 

@@ -373,7 +373,6 @@ function CostsTab({ input, report }: { input: ComplianceInput; report: ReportOut
         hasRealEstate={input.assets.cn_assets.includes('real_estate') || input.assets.jp_assets.includes('real_estate')}
         hasJPAssets={input.assets.jp_assets.length > 0}
         hasCNFinancial={input.assets.cn_assets.includes('financial') || input.assets.cn_assets.includes('insurance')}
-        onUnlock={() => {}}
       />
       <CalculatorPanel
         hasSpouse={input.heirs.spouse_exists} childrenCount={input.heirs.children_count}
