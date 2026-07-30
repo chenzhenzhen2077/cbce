@@ -23,14 +23,45 @@ export interface IdentityInput {
   nationality: 'CN' | 'JP' | 'THIRD' | ''
 }
 
-// ---- 板块二：资产大类 ----
+// ---- 板块二：资产大类（中日统一分类）----
 export interface AssetInput {
-  cn_assets: AssetCN[]
-  jp_assets: AssetJP[]
+  cn_assets: AssetCat[]
+  jp_assets: AssetCat[]
 }
 
-export type AssetCN = 'cn_re' | 'cn_fin' | 'cn_leverage' | 'cn_digital'
-export type AssetJP = 'jp_re' | 'jp_fin' | 'jp_digital'
+// 统一资产类别
+export type AssetCat = 'real_estate' | 'financial' | 'insurance' | 'physical' | 'leverage'
+
+export const ASSET_LABELS: Record<AssetCat, string> = {
+  real_estate: '不动产（住宅/商业/土地）',
+  financial: '金融资产（存款/理财/股票/证券）',
+  insurance: '保险及年金（寿险/储蓄型保险）',
+  physical: '实物资产（车辆/奢侈品/艺术品/贵金属）',
+  leverage: '杠杆/配资/信用账户',
+}
+
+export const ASSET_RISK_NOTES: Record<AssetCat, { cn: string; jp: string }> = {
+  real_estate: {
+    cn: '中国房管局非诉过户须继承权公证 + 海牙认证（如文书来自境外）',
+    jp: '日本法務局相続登記须全体继承人盖章 + 印鑑証明書',
+  },
+  financial: {
+    cn: '境内银行解冻须继承权公证，外籍继承人汇出须外管局备案',
+    jp: '日本金融机关口座解冻须遗产分割协议书 + 继承人身份证明',
+  },
+  insurance: {
+    cn: '指定受益人的保单不进入遗产池，直接赔付给受益人',
+    jp: '指定受取人的保险金不进入遗产池，但可能涉及赠与税',
+  },
+  physical: {
+    cn: '车辆过户须到车管所，贵重物品按动产处理',
+    jp: '车辆须运输局名义变更，贵重物品按动产继承',
+  },
+  leverage: {
+    cn: '高危：券商可依约直接强平，须提前安排应急授权',
+    jp: '日本无完全对应的杠杆账户概念，信用交易归入金融资产',
+  },
+}
 
 // ---- 板块三：继承人画像 ----
 export interface HeirInput {
@@ -98,19 +129,6 @@ export interface ReportOutput {
 }
 
 // ---- 标签映射 ----
-export const CN_ASSET_LABELS: Record<AssetCN, string> = {
-  cn_re: '不动产（住宅/商业）',
-  cn_fin: '金融资产（存款/理财/股票）',
-  cn_leverage: '杠杆/配资/融资融券/资管账户',
-  cn_digital: '虚拟/数字资产',
-}
-
-export const JP_ASSET_LABELS: Record<AssetJP, string> = {
-  jp_re: '日本不动产（一户建/公寓/土地）',
-  jp_fin: '日本金融资产（银行存款/证券口座）',
-  jp_digital: '境外加密货币/冷钱包私钥',
-}
-
 export const HEIR_LOCATION_LABELS: Record<HeirLocation, string> = {
   HEIR_CN: '中国大陆',
   HEIR_JP: '日本',

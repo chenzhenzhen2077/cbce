@@ -20,7 +20,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   const { identity, assets, heirs, document } = input
 
   // ---- Rule 1: 日本不动产 + 继承人失联 (致命死锁) ----
-  if (assets.jp_assets.includes('jp_re') && heirs.has_missing_heir) {
+  if (assets.jp_assets.includes('real_estate') && heirs.has_missing_heir) {
     report.status = 'RED'
     report.blockers.push({
       code: 'ERR_JP_RE_DEADLOCK',
@@ -38,7 +38,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   // ---- Rule 2: 日本自笔遗嘱 + 中国房产 (形式要件阻断) ----
   if (
     document.doc_type === 'JP_HOLOGRAPH' &&
-    assets.cn_assets.includes('cn_re')
+    assets.cn_assets.includes('real_estate')
   ) {
     if (!document.has_apostille) {
       report.status = 'RED'
@@ -58,7 +58,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
 
   // ---- Rule 3: 境内杠杆/配资 + 居住在日本 (流动性冻结) ----
   if (
-    assets.cn_assets.includes('cn_leverage') &&
+    assets.cn_assets.includes('leverage') &&
     identity.habitual_residence === 'JP'
   ) {
     report.warnings.push({
@@ -74,22 +74,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
     })
   }
 
-  // ---- Rule 4: 虚拟/数字资产 (权属蒸发风险) ----
-  if (
-    assets.cn_assets.includes('cn_digital') ||
-    assets.jp_assets.includes('jp_digital')
-  ) {
-    report.warnings.push({
-      code: 'WARN_DIGITAL_ASSET_LOST',
-      title: '虚拟/数字资产法定执行盲区',
-      detail:
-        '中日两地不动产登记局或银行均无加密货币、冷钱包私钥的法定托管通道。现有传承文书无法被司法机关强制执行。',
-    })
-    report.roadmap.push({
-      text: '【私钥托管】建立线下的私钥安全交接与双重备份机制，确保法定继承人能够知晓并获取技术资产。此项不通过法律程序执行，仅靠线下信任安排。',
-      priority: 'protective',
-    })
-  }
+  // ---- Rule 4 (已删除: 虚拟资产，按用户要求移除) ----
 
   // ---- Rule 5: 尚无文书的通用提示 ----
   if (document.doc_type === 'NONE') {
@@ -109,7 +94,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   // ---- Rule 6: 第三国继承人 + 中国不动产 (三国认证链) ----
   if (
     heirs.heir_locations.includes('HEIR_THIRD') &&
-    assets.cn_assets.includes('cn_re')
+    assets.cn_assets.includes('real_estate')
   ) {
     report.warnings.push({
       code: 'WARN_THIRD_COUNTRY_AUTH_CHAIN',
@@ -127,7 +112,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   // ---- Rule 7: 限制行为能力继承人 + 日本资产 (特别代理人) ----
   if (
     heirs.has_incapacity_heir &&
-    (assets.jp_assets.includes('jp_re') || assets.jp_assets.includes('jp_fin'))
+    (assets.jp_assets.includes('real_estate') || assets.jp_assets.includes('financial'))
   ) {
     report.warnings.push({
       code: 'WARN_JP_INCAPACITY_GUARDIAN',
@@ -145,7 +130,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   // ---- Rule 8: 永住者(PR) + 中国金融资产 (外汇管制审查) ----
   if (
     identity.jp_legal_status === 'PR' &&
-    assets.cn_assets.includes('cn_fin')
+    assets.cn_assets.includes('financial')
   ) {
     report.warnings.push({
       code: 'WARN_PR_CN_FOREX',
@@ -161,7 +146,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   }
 
   // ---- Rule 9: 日本2024继承登记强制义务 ----
-  if (assets.jp_assets.includes('jp_re')) {
+  if (assets.jp_assets.includes('real_estate')) {
     report.warnings.push({
       code: 'WARN_JP_2024_REGISTRATION',
       title: '日本2024年继承登记强制义务（3年内必须完成）',
@@ -176,7 +161,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   }
 
   // ---- Rule 10: 外汇继承转移豁免（外籍继承人） ----
-  if (input.identity.nationality !== 'CN' && (assets.cn_assets.includes('cn_re') || assets.cn_assets.includes('cn_fin'))) {
+  if (input.identity.nationality !== 'CN' && (assets.cn_assets.includes('real_estate') || assets.cn_assets.includes('financial'))) {
     report.warnings.push({
       code: 'INFO_FOREX_EXEMPTION',
       title: '外籍继承人外汇继承转移不受5万美元年度限额约束',
@@ -190,7 +175,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   }
 
   // ---- Rule 11: 日本继承放弃3个月期限 ----
-  if ((assets.jp_assets.includes('jp_re') || assets.jp_assets.includes('jp_fin')) && input.heirs.heir_locations.includes('HEIR_THIRD')) {
+  if ((assets.jp_assets.includes('real_estate') || assets.jp_assets.includes('financial')) && input.heirs.heir_locations.includes('HEIR_THIRD')) {
     report.warnings.push({
       code: 'WARN_JP_RENUNCIATION_DEADLINE',
       title: '日本法下继承放弃仅3个月期限',
@@ -218,7 +203,7 @@ export function runComplianceRules(input: ComplianceInput): ReportOutput {
   }
 
   // ---- Rule 13: 2024年日本国内联络人制度 ----
-  if (assets.jp_assets.includes('jp_re') && input.identity.habitual_residence !== 'JP') {
+  if (assets.jp_assets.includes('real_estate') && input.identity.habitual_residence !== 'JP') {
     report.warnings.push({
       code: 'WARN_JP_CONTACT_PERSON',
       title: '海外居民持有日本不动产须登记在日联络人',

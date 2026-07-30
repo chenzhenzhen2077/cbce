@@ -19,7 +19,7 @@ const defaultPre: PreAssessmentInput = {
 const initialInput: ComplianceInput = {
   pre: defaultPre,
   identity: { habitual_residence: '', jp_legal_status: '', nationality: '' },
-  assets: { cn_assets: [], jp_assets: [] },
+  assets: { cn_assets: [] as import('./types').AssetCat[], jp_assets: [] as import('./types').AssetCat[] },
   heirs: { spouse_exists: true, children_count: 0, children_minor_count: 0, grandchildren_count: 0, parents_alive_count: 0, heir_locations: [], has_missing_heir: false, has_incapacity_heir: false, has_mandatory_share: false },
   document: { doc_type: '', has_apostille: false },
 }

@@ -3,6 +3,7 @@
 // 三个用户目标 → 对应的法律策略方案
 // ============================================================
 
+import { useState } from 'react'
 import type { ComplianceInput } from '../types'
 
 interface Goal {
@@ -19,7 +20,7 @@ interface Goal {
 function buildGoals(input: ComplianceInput): Goal[] {
   const hasJP = input.assets.jp_assets.length > 0
   const hasCN = input.assets.cn_assets.length > 0
-  const hasRE = input.assets.cn_assets.includes('cn_re') || input.assets.jp_assets.includes('jp_re')
+  const hasRE = input.assets.cn_assets.includes('real_estate') || input.assets.jp_assets.includes('real_estate')
   const hasGrandkids = input.heirs.grandchildren_count > 0
   const hasMissing = input.heirs.has_missing_heir
   const isJP = input.identity.habitual_residence === 'JP'
@@ -124,73 +125,54 @@ function buildGoals(input: ComplianceInput): Goal[] {
 
 export function GoalPlanner({ input }: { input: ComplianceInput; onUnlock?: (name: string) => void }) {
   const goals = buildGoals(input)
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   return (
     <div className="bg-surface-card border border-border rounded-xl overflow-hidden">
       <div className="bg-neutral-50 border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-text-primary">
-          🗺 传承方案设计
-        </h3>
-        <p className="text-xs text-text-muted mt-0.5">
-          大多数人的需求不是三选一——而是三个都要。以下三项方案互补而非互斥，好的规划可以同时实现：指定受益人、费用可控、流程顺畅。
-        </p>
+        <h3 className="text-sm font-semibold text-text-primary">🗺 传承方案设计</h3>
+        <p className="text-xs text-text-muted mt-0.5">三项方案互补。点击展开查看具体策略和操作步骤。</p>
       </div>
 
-      <div className="p-5 space-y-5">
+      <div className="divide-y divide-border">
         {goals.map((g) => (
-          <div key={g.id} className="border border-border rounded-xl overflow-hidden">
-            {/* 目标头部 */}
-            <div className="bg-neutral-50 px-4 py-3 border-b border-border flex items-start gap-3">
-              <span className="text-2xl">{g.icon}</span>
+          <div key={g.id}>
+            <button
+              onClick={() => setExpanded({ ...expanded, [g.id]: !expanded[g.id] })}
+              className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-neutral-50 transition-colors"
+            >
+              <span className="text-xl">{g.icon}</span>
               <div className="flex-1">
                 <h4 className="text-sm font-semibold text-text-primary">{g.title}</h4>
-                <p className="text-xs text-text-secondary mt-0.5 italic">"{g.question}"</p>
+                <p className="text-xs text-text-secondary mt-0.5">{g.question}</p>
               </div>
-            </div>
-
-            <div className="p-4 space-y-4">
-              {/* 策略 */}
-              <div>
-                <p className="text-xs font-medium text-text-primary mb-1">📋 核心策略</p>
-                <p className="text-xs text-text-secondary leading-relaxed">{g.strategy}</p>
+              <span className="text-text-muted text-sm">{expanded[g.id] ? '▲' : '▼'}</span>
+            </button>
+            {expanded[g.id] && (
+              <div className="px-4 pb-4 space-y-3 border-t border-border/50 pt-3">
+                <div>
+                  <p className="text-xs font-medium text-text-primary mb-1">📋 核心策略</p>
+                  <p className="text-xs text-text-secondary leading-relaxed">{g.strategy}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-text-primary mb-1">📄 需要准备的法律文件</p>
+                  <ul className="space-y-1">
+                    {g.documents.map((d, i) => (<li key={i} className="text-xs text-text-secondary flex gap-1.5"><span className="text-green-500 shrink-0">✓</span> {d}</li>))}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs font-medium text-text-primary mb-1">🔄 办理步骤</p>
+                  <ul className="space-y-1">
+                    {g.procedures.map((p, i) => (<li key={i} className="text-xs text-text-secondary">{p}</li>))}
+                  </ul>
+                </div>
+                <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                  <p className="text-xs text-amber-800 leading-relaxed">{g.watchOut}</p>
+                </div>
               </div>
-
-              {/* 需要准备的文件 */}
-              <div>
-                <p className="text-xs font-medium text-text-primary mb-1">📄 需要准备的法律文件</p>
-                <ul className="space-y-1">
-                  {g.documents.map((d, i) => (
-                    <li key={i} className="text-xs text-text-secondary flex gap-1.5">
-                      <span className="text-green-500 shrink-0">✓</span> {d}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 办理步骤 */}
-              <div>
-                <p className="text-xs font-medium text-text-primary mb-1">🔄 办理步骤</p>
-                <ul className="space-y-1">
-                  {g.procedures.map((p, i) => (
-                    <li key={i} className="text-xs text-text-secondary">{p}</li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* 注意事项 */}
-              <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
-                <p className="text-xs text-amber-800 leading-relaxed">{g.watchOut}</p>
-              </div>
-            </div>
+            )}
           </div>
         ))}
-      </div>
-
-      {/* CTA */}
-      <div className="border-t border-border px-5 py-4 bg-neutral-50 text-center">
-        <p className="text-sm text-text-secondary">
-          以上方案基于你的诊断结果生成。如需律师一对一咨询，请通过下方联系方式对接。
-        </p>
       </div>
     </div>
   )

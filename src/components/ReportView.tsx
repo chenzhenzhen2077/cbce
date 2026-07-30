@@ -6,7 +6,7 @@
 
 import { useState } from 'react'
 import type { ComplianceInput, ReportOutput } from '../types'
-import { CN_ASSET_LABELS, JP_ASSET_LABELS, HEIR_LOCATION_LABELS, DOC_TYPE_LABELS } from '../types'
+import { ASSET_LABELS, HEIR_LOCATION_LABELS, DOC_TYPE_LABELS } from '../types'
 import { HeirDiagram } from './HeirDiagram'
 import { GoalPlanner } from './GoalPlanner'
 import { CalculatorPanel } from './CalculatorPanel'
@@ -25,8 +25,8 @@ function generateSummary(input: ComplianceInput, report: ReportOutput): string {
   if (input.identity.jp_legal_status) idParts.push(statusMap[input.identity.jp_legal_status] || input.identity.jp_legal_status)
   if (input.identity.nationality) idParts.push(natMap[input.identity.nationality] || input.identity.nationality)
   parts.push(idParts.join('，') + '。')
-  const cnAssets = input.assets.cn_assets.map((a) => CN_ASSET_LABELS[a]).join('、')
-  const jpAssets = input.assets.jp_assets.map((a) => JP_ASSET_LABELS[a]).join('、')
+  const cnAssets = input.assets.cn_assets.map((a) => ASSET_LABELS[a]).join('、')
+  const jpAssets = input.assets.jp_assets.map((a) => ASSET_LABELS[a]).join('、')
   if (cnAssets && jpAssets) parts.push(`在中国大陆拥有：${cnAssets}；在日本拥有：${jpAssets}。`)
   else if (cnAssets) parts.push(`在中国大陆拥有：${cnAssets}。`)
   else if (jpAssets) parts.push(`在日本拥有：${jpAssets}。`)
@@ -55,14 +55,17 @@ const priorityLabel: Record<string, string> = {
   critical: '🔴 优先解决', procedural: '📋 前置程序', protective: '🛡 资产保护', informational: 'ℹ️ 参考信息',
 }
 
-type Tab = 'diagnosis' | 'goals' | 'costs' | 'compare'
+type Tab = 'diagnosis' | 'statutory' | 'goals' | 'costs' | 'compare'
 
 const tabs: { key: Tab; label: string; icon: string }[] = [
   { key: 'diagnosis', label: '诊断结果', icon: '📊' },
+  { key: 'statutory', label: '法定继承', icon: '📐' },
   { key: 'goals', label: '传承方案', icon: '🗺' },
   { key: 'costs', label: '费用参考', icon: '💰' },
   { key: 'compare', label: '方案对比', icon: '⚖️' },
 ]
+
+function scrollTop() { window.scrollTo({ top: 0, behavior: 'smooth' }) }
 
 export function ReportView({ report, input, onReset }: { report: ReportOutput; input: ComplianceInput; onReset: () => void }) {
   const cfg = statusConfig[report.status]
@@ -82,7 +85,7 @@ export function ReportView({ report, input, onReset }: { report: ReportOutput; i
       <div className="bg-white border-b border-border">
         <div className="flex gap-1 overflow-x-auto">
           {tabs.map((t) => (
-            <button key={t.key} onClick={() => setTab(t.key)}
+            <button key={t.key} onClick={() => { setTab(t.key); scrollTop() }}
               className={`shrink-0 px-3 py-2.5 text-sm font-medium rounded-t-lg transition-colors whitespace-nowrap
                 ${tab === t.key ? 'bg-white border border-border border-b-white -mb-[1px] text-text-primary' : 'text-text-muted hover:text-text-secondary'}`}>
               {t.icon} <span className="hidden sm:inline">{t.label}</span>
@@ -93,17 +96,16 @@ export function ReportView({ report, input, onReset }: { report: ReportOutput; i
 
       {/* === Tab 内容 === */}
       {tab === 'diagnosis' && <DiagnosisTab report={report} input={input} />}
+      {tab === 'statutory' && <StatutoryTab input={input} />}
       {tab === 'goals' && <GoalsTab input={input} />}
       {tab === 'costs' && <CostsTab input={input} />}
       {tab === 'compare' && <CompareTab input={input} report={report} />}
 
       {/* === 底部导航 === */}
       <div className="flex items-center justify-between pt-2">
-        <button onClick={onReset} className="text-sm text-text-muted hover:text-text-secondary transition-colors">
-          ← 重新诊断
-        </button>
+        <button onClick={onReset} className="text-sm text-text-muted hover:text-text-secondary transition-colors">← 重新诊断</button>
         {!isLast ? (
-          <button onClick={() => setTab(tabs[currentIdx + 1].key)}
+          <button onClick={() => { setTab(tabs[currentIdx + 1].key); scrollTop() }}
             className="px-5 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors">
             下一步：{tabs[currentIdx + 1].label} →
           </button>
@@ -185,7 +187,29 @@ function DiagnosisTab({ report, input }: { report: ReportOutput; input: Complian
   )
 }
 
-// ==================== Tab 2: 传承方案 ====================
+// ==================== Tab 2: 法定继承（如果不做任何安排）====================
+function StatutoryTab({ input }: { input: ComplianceInput }) {
+  return (
+    <div className="space-y-4">
+      <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
+        <p className="text-sm text-amber-800 leading-relaxed">
+          <strong>📐 如果不做任何安排——</strong>以下是你去世后，按照中国和日本各自的法定继承规则，资产将如何分配。这就是你选择"什么都不做"的默认结果。
+        </p>
+      </div>
+      <HeirDiagram
+        data={{
+          spouse_exists: input.heirs.spouse_exists, children_count: input.heirs.children_count,
+          children_minor_count: input.heirs.children_minor_count, grandchildren_count: input.heirs.grandchildren_count,
+          parents_alive_count: input.heirs.parents_alive_count, has_missing_heir: input.heirs.has_missing_heir,
+          has_incapacity_heir: input.heirs.has_incapacity_heir || input.heirs.children_minor_count > 0,
+          habitual_residence: input.identity.habitual_residence || 'CN',
+        }}
+      />
+    </div>
+  )
+}
+
+// ==================== Tab 3: 传承方案 ====================
 function GoalsTab({ input }: { input: ComplianceInput }) {
   return (
     <div className="space-y-4">
@@ -218,9 +242,9 @@ function CostsTab({ input }: { input: ComplianceInput }) {
         willType={input.document.doc_type || 'none'}
       />
       <AffordabilityCheck
-        hasRealEstate={input.assets.cn_assets.includes('cn_re') || input.assets.jp_assets.includes('jp_re')}
+        hasRealEstate={input.assets.cn_assets.includes('real_estate') || input.assets.jp_assets.includes('real_estate')}
         hasJPAssets={input.assets.jp_assets.length > 0}
-        hasCNFinancial={input.assets.cn_assets.includes('cn_fin')}
+        hasCNFinancial={input.assets.cn_assets.includes('financial') || input.assets.cn_assets.includes('insurance')}
         onUnlock={() => {}}
       />
     </div>
@@ -232,11 +256,11 @@ function CompareTab({ input, report }: { input: ComplianceInput; report: ReportO
   return (
     <div className="space-y-4">
       <ScenarioComparison input={{
-        totalValueCNY: 500, cnRealEstatePct: input.assets.cn_assets.includes('cn_re') ? 40 : 0,
-        cnFinancialPct: input.assets.cn_assets.includes('cn_fin') ? 20 : 0,
-        cnLeveragePct: input.assets.cn_assets.includes('cn_leverage') ? 10 : 0,
-        jpRealEstatePct: input.assets.jp_assets.includes('jp_re') ? 20 : 0,
-        jpFinancialPct: input.assets.jp_assets.includes('jp_fin') ? 10 : 0,
+        totalValueCNY: 500, cnRealEstatePct: input.assets.cn_assets.includes('real_estate') ? 40 : 0,
+        cnFinancialPct: input.assets.cn_assets.includes('financial') ? 20 : 0,
+        cnLeveragePct: input.assets.cn_assets.includes('leverage') ? 10 : 0,
+        jpRealEstatePct: input.assets.jp_assets.includes('real_estate') ? 20 : 0,
+        jpFinancialPct: input.assets.jp_assets.includes('financial') ? 10 : 0,
         hasSpouse: input.heirs.spouse_exists, childrenCount: input.heirs.children_count,
         grandchildrenCount: input.heirs.grandchildren_count, parentsAlive: input.heirs.parents_alive_count,
         habitualResidence: input.identity.habitual_residence === 'JP' ? 'JP' : 'CN',
