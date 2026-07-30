@@ -3,6 +3,7 @@ import type { ComplianceInput, ReportOutput, Step, PreAssessmentInput } from './
 import { evaluatePreAssessment } from './types'
 import { runComplianceRules } from './engine/rules'
 import { Stepper } from './components/Stepper'
+import { IntroPage } from './components/IntroPage'
 import { StepPreAssessment } from './components/StepPreAssessment'
 import { StepIdentity } from './components/StepIdentity'
 import { StepAssets } from './components/StepAssets'
@@ -25,6 +26,7 @@ const initialInput: ComplianceInput = {
 }
 
 export default function App() {
+  const [started, setStarted] = useState(false)
   const [step, setStep] = useState<Step>('pre')
   const [input, setInput] = useState<ComplianceInput>(initialInput)
   const [report, setReport] = useState<ReportOutput | null>(null)
@@ -52,6 +54,10 @@ export default function App() {
     setReport(null)
     setPreBlocked(false)
     setStep('pre')
+  }
+
+  if (!started) {
+    return <IntroPage onStart={() => setStarted(true)} />
   }
 
   return (
