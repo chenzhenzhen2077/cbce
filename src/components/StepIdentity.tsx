@@ -83,8 +83,7 @@ export function StepIdentity({
           {[
             { value: 'CN', label: '中国' },
             { value: 'JP', label: '日本' },
-            { value: 'DUAL', label: '中日双籍' },
-            { value: 'THIRD', label: '第三国' },
+            { value: 'THIRD', label: '第三国/地区' },
           ].map((opt) => (
             <label key={opt.value} className="cursor-pointer">
               <input
@@ -95,7 +94,7 @@ export function StepIdentity({
                 onChange={(e) =>
                   onChange({
                     ...data,
-                    nationality: e.target.value as 'CN' | 'JP' | 'DUAL' | 'THIRD',
+                    nationality: e.target.value as 'CN' | 'JP' | 'THIRD',
                   })
                 }
                 className="peer sr-only"
