@@ -30,7 +30,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
       id: 'designate',
       icon: '🎯',
       title: '按我的意愿分配',
-      question: '"我想让特定的人拿到特定的资产——不是法定继承那种平均分。"',
+      question: '"我不想让法律替我决定谁拿什么——我要自己指定。"',
       strategy: hasCN && hasJP
         ? '采用分立架构（Split Wills）：中国资产立中国公证遗嘱，日本资产立日本公正证书遗嘱。两国资产各自按所在国法律执行，避免跨境互认文书的麻烦。遗嘱中明确指定每项资产的归属人。'
         : hasCN
@@ -64,7 +64,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
       id: 'tax',
       icon: '💰',
       title: '让继承人花最少的钱',
-      question: '"继承本身已经够麻烦了，能不能让他们少出点钱？"',
+      question: '"继承本来就有税费，能不能在合法的前提下尽量少花？"',
       strategy: hasJP && isJP
         ? `核心策略：最大化日本配偶继承税抵免（最高 1.6 亿 JPY 免税额度），同时通过分立架构将中国资产与日本资产程序分离，避免跨境双向海牙认证费用。${hasRE ? '如果有不动产，考虑将部分房产在生前置换为流动性资产，减少继承登记环节的税费。' : ''}`
         : hasCN
@@ -92,7 +92,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
       id: 'simple',
       icon: '⚡',
       title: '让继承人跑最少的手续',
-      question: '"我不想让家人为了继承我的东西跑断腿。能不能尽量简单？"',
+      question: '"我希望家里人办手续越少越好——最好一个人就能搞定。"',
       strategy: hasMissing
         ? `最大障碍是${hasRE ? '不动产' : '资产'}的全体继承人签字要求。策略：①在日本指定遗言执行者，绕过继承人盖章；②${hasCN ? '中国资产用公证遗嘱，无需全体继承人到场公证；' : ''}③将需要全体签字的资产（不动产）和不需签字的资产（金融资产）在遗嘱中分开处理，金融资产先行分配。`
         : hasCN && hasJP
@@ -129,10 +129,10 @@ export function GoalPlanner({ input }: { input: ComplianceInput; onUnlock?: (nam
     <div className="bg-surface-card border border-border rounded-xl overflow-hidden">
       <div className="bg-neutral-50 border-b border-border px-4 py-3">
         <h3 className="text-sm font-semibold text-text-primary">
-          🗺 传承方案设计（付费功能预览）
+          🗺 传承方案设计
         </h3>
         <p className="text-xs text-text-muted mt-0.5">
-          基于你的诊断结果，以下是三种不同目标的法律策略方案。选择你最关心的一项目标。
+          大多数人的需求不是三选一——而是三个都要。以下三项方案互补而非互斥，好的规划可以同时实现：指定受益人、费用可控、流程顺畅。
         </p>
       </div>
 
