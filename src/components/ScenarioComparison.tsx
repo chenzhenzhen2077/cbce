@@ -177,72 +177,48 @@ export function ScenarioComparison({ input }: { input: CalcInput }) {
         </p>
       </div>
 
-      {/* 对比总览表 */}
+      {/* 对比总览表 —— 横纵交换：行=方案 列=维度 */}
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-border">
-              <th className="text-left px-4 py-3 text-xs font-medium text-text-muted w-28">对比维度</th>
-              {scenarios.map((s) => (
-                <th key={s.def.id} className="text-center px-4 py-3 min-w-[180px]">
-                  <div className="text-base">{s.def.icon}</div>
-                  <div className="font-semibold text-text-primary">{s.def.title}</div>
-                  <div className="text-[11px] text-text-muted">{s.def.tagline}</div>
-                </th>
-              ))}
+              <th className="text-left px-3 py-3 text-xs font-medium text-text-muted min-w-[120px]">方案</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[90px]">💰 总费用</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[80px]">⏱ 耗时</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[140px]">📝 手续</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[90px]">🤝 配合</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[100px]">🇯🇵 继承税</th>
+              <th className="text-center px-3 py-3 text-xs font-medium text-text-muted min-w-[120px]">👥 分配</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {/* 总费用 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted">💰 预估总费用</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="text-center px-4 py-3">
-                  <span className={`text-sm font-bold ${
-                    s === scenarios[0] ? 'text-red-600' :
-                    s === scenarios[1] ? 'text-amber-600' :
-                    'text-green-600'
-                  }`}>
-                    {s.result.globalFeesTotal} 万元
+            {scenarios.map((s) => (
+              <tr key={s.def.id} className={s.def.id === 'split' ? 'bg-neutral-50/50' : ''}>
+                <td className="px-3 py-3">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-base">{s.def.icon}</span>
+                    <div>
+                      <div className="text-sm font-semibold text-text-primary">{s.def.title}</div>
+                      {s.def.id === 'split' && <span className="text-[10px] bg-neutral-900 text-white px-1 rounded-full">推荐</span>}
+                    </div>
+                  </div>
+                </td>
+                <td className="text-center px-3 py-3">
+                  <span className={`text-sm font-bold ${s === scenarios[0] ? 'text-red-600' : s === scenarios[1] ? 'text-amber-600' : 'text-green-600'}`}>
+                    {s.result.globalFeesTotal} 万
                   </span>
                   {s !== scenarios[0] && (
-                    <div className="text-[11px] text-green-600">
-                      省 {Math.round((base.globalFeesTotal - s.result.globalFeesTotal) * 100) / 100} 万元
-                    </div>
+                    <div className="text-[11px] text-green-600">省 {Math.round((base.globalFeesTotal - s.result.globalFeesTotal) * 100) / 100} 万</div>
                   )}
                 </td>
-              ))}
-            </tr>
-
-            {/* 总耗时 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted">⏱ 预估耗时</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="text-center px-4 py-3">
-                  <span className="text-sm font-medium text-text-primary">{s.def.timeRange}</span>
+                <td className="text-center px-3 py-3 text-sm text-text-primary">{s.def.timeRange}</td>
+                <td className="text-center px-3 py-3 text-xs text-text-secondary">
+                  {s.def.id === 'statutory' ? '双向海牙认证 + 两国公证 + 登记' :
+                   s.def.id === 'split' ? '各自在本国公证 + 登记（独立并行）' :
+                   s.def.id === 'spouse' ? '配偶单方公证 + 登记（最少）' :
+                   '分立遗嘱 + 遗赠指定'}
                 </td>
-              ))}
-            </tr>
-
-            {/* 需办手续数 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted">📝 需办手续</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="text-center px-4 py-3">
-                  <span className="text-sm text-text-primary">
-                    {s.def.id === 'statutory' ? '双向海牙认证 + 两国公证 + 登记' :
-                     s.def.id === 'split' ? '各自在本国公证 + 登记（独立并行）' :
-                     '配偶单方公证 + 登记（最少）'}
-                  </span>
-                </td>
-              ))}
-            </tr>
-
-            {/* 继承人协调 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted">🤝 继承人配合</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="text-center px-4 py-3">
+                <td className="text-center px-3 py-3">
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
                     s.def.id === 'statutory' ? 'bg-red-100 text-red-700' :
                     s.def.id === 'split' ? 'bg-amber-100 text-amber-700' :
@@ -253,48 +229,31 @@ export function ScenarioComparison({ input }: { input: CalcInput }) {
                      '仅配偶办理'}
                   </span>
                 </td>
-              ))}
-            </tr>
-
-            {/* 日本继承税 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted">🇯🇵 继承税</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="text-center px-4 py-3">
+                <td className="text-center px-3 py-3">
                   <span className={`text-xs font-medium ${
                     s.def.id === 'statutory' ? 'text-red-600' :
                     s.def.id === 'split' ? 'text-amber-600' :
                     'text-green-600'
                   }`}>
-                    {s.def.id === 'statutory' ? '按法定份额各自缴纳' :
-                     s.def.id === 'split' ? '同左，但可优化分配' :
-                     '配偶抵免最大化，趋近零'}
+                    {s.def.id === 'statutory' ? '按法定份额各自缴' :
+                     s.def.id === 'split' ? '同左，可优化分配' :
+                     s.def.id === 'spouse' ? '配偶抵免最大化' :
+                     '与分立架构相同'}
                   </span>
                 </td>
-              ))}
-            </tr>
-
-            {/* 继承人分配 */}
-            <tr>
-              <td className="px-4 py-3 text-xs text-text-muted align-top">👥 继承人分配</td>
-              {scenarios.map((s) => (
-                <td key={s.def.id} className="px-4 py-3">
-                  <div className="space-y-1">
-                    {s.result.heirs.filter((h) => h.sharePct > 0).map((h, i) => (
-                      <div key={i} className="flex items-center justify-between text-xs">
+                <td className="px-3 py-3">
+                  <div className="space-y-0.5">
+                    {s.result.heirs.filter((h) => h.sharePct > 0).slice(0, 3).map((h, i) => (
+                      <div key={i} className="flex items-center justify-between text-[11px] gap-1">
                         <span className="text-text-secondary">{h.label}</span>
-                        <span className="font-medium text-text-primary">
-                          {h.sharePct}% · {h.netAmount} 万
-                        </span>
+                        <span className="font-medium text-text-primary">{h.sharePct}%</span>
                       </div>
                     ))}
-                    {s.result.heirs.filter((h) => h.sharePct > 0).length === 0 && (
-                      <span className="text-text-muted text-xs">—</span>
-                    )}
+                    {s.result.heirs.filter((h) => h.sharePct > 0).length === 0 && <span className="text-text-muted text-xs">—</span>}
                   </div>
                 </td>
-              ))}
-            </tr>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
