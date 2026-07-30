@@ -12,61 +12,6 @@ export function StepPreAssessment({
 }) {
   return (
     <div className="space-y-6">
-      {/* 法定继承基线教育区 */}
-      <div className="bg-surface-card border border-border rounded-xl p-5">
-        <h2 className="text-base font-semibold text-text-primary mb-3">
-          📖 如果不做任何安排，法定继承大致长这样
-        </h2>
-        <p className="text-sm text-text-secondary leading-relaxed mb-4">
-          了解法定继承的"默认结果"，是判断是否需要主动规划的第一步。中日两国的法定继承规则差异巨大，跨境家庭往往两头都不讨好。
-        </p>
-
-        <div className="grid sm:grid-cols-2 gap-4">
-          {/* 中国侧 */}
-          <div className="bg-red-soft border border-red-100 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-red-deep mb-2">
-              🇨🇳 中国法定继承（民法典 第1127条）
-            </h3>
-            <div className="text-xs text-text-secondary leading-relaxed space-y-1">
-              <p><strong>第一顺序：</strong>配偶、子女、父母（均分）</p>
-              <p><strong>第二顺序：</strong>兄弟姐妹、祖父母、外祖父母</p>
-              <p className="text-text-muted mt-2">
-                ⚠ 配偶先分走夫妻共同财产的一半，再参与继承
-              </p>
-              <p className="text-text-muted">
-                ⚠ "双无人员"（无劳动能力+无生活来源）享有必留份
-              </p>
-            </div>
-          </div>
-
-          {/* 日本侧 */}
-          <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-amber-deep mb-2">
-              🇯🇵 日本法定继承（民法 第887-890条）
-            </h3>
-            <div className="text-xs text-text-secondary leading-relaxed space-y-1">
-              <p><strong>配偶：</strong>永远是继承人</p>
-              <p><strong>第一顺序：</strong>子女（含代位继承）</p>
-              <p><strong>第二顺序：</strong>父母/祖父母</p>
-              <p><strong>第三顺序：</strong>兄弟姐妹</p>
-              <p className="text-text-muted mt-2">
-                ⚠ 配偶+子女：配偶1/2，子女均分1/2
-              </p>
-              <p className="text-text-muted">
-                ⚠ "遗留分"（特留份）= 法定应继份的1/2
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* 交叉风险提示 */}
-        <div className="mt-4 bg-surface border border-border rounded-lg p-3">
-          <p className="text-xs text-text-secondary leading-relaxed">
-            <strong>⛓ 跨境典型困局：</strong>被继承人常住日本、中国有房 → 日本法为准据法，但中国房管局不认日本继承权证明。中国籍被继承人、日本永住、无文书 → 中国法可能被认定为准据法，但日本银行不认中国公证文书。两地互不认可，家庭陷入继承死锁。
-          </p>
-        </div>
-      </div>
-
       {/* 时机评估三问 */}
       <div className="bg-surface-card border border-border rounded-xl p-5">
         <h2 className="text-base font-semibold text-text-primary mb-1">
