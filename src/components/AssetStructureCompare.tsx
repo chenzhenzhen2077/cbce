@@ -3,6 +3,8 @@
 // 核心视角：从继承人角度看，哪种资产结构最"友好"
 // ============================================================
 
+import { useState } from 'react'
+
 interface Structure {
   id: string
   icon: string
@@ -36,6 +38,7 @@ export function AssetStructureCompare({
 }) {
   const T = totalValue || 500
   const isJP = habitualResidence === 'JP'
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({ mixed: true })
 
   const structures: Structure[] = [
     {
@@ -202,7 +205,7 @@ export function AssetStructureCompare({
             s.recommended ? 'border-neutral-400 ring-1 ring-neutral-200' : 'border-border'
           }`}>
             {/* 头部 */}
-            <div className={`px-4 py-3 ${s.recommended ? 'bg-neutral-100' : 'bg-neutral-50'} border-b border-border`}>
+            <button onClick={() => setExpanded({ ...expanded, [s.id]: !expanded[s.id] })} className={`w-full text-left px-4 py-3 ${s.recommended ? 'bg-neutral-100' : 'bg-neutral-50'} border-b border-border hover:bg-neutral-100 transition-colors`}>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xl">{s.icon}</span>
                 <div className="flex-1">
@@ -216,8 +219,10 @@ export function AssetStructureCompare({
               <p className="text-[11px] text-text-secondary leading-relaxed mt-2 italic">
                 {s.subline}
               </p>
-            </div>
+              <span className="text-text-muted text-xs ml-2">{expanded[s.id] ? '▲' : '▼'}</span>
+            </button>
 
+            {expanded[s.id] && (
             <div className="p-4 space-y-3">
               {/* 继承友好度 */}
               <div className="bg-surface rounded-lg p-2.5">
@@ -291,6 +296,7 @@ export function AssetStructureCompare({
                 </div>
               </div>
             </div>
+            )}
           </div>
         ))}
       </div>

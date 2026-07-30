@@ -32,7 +32,7 @@ export function CalculatorPanel({
   const [cnLev, setCnLev] = useState(0)
   const [jpRE, setJpRE] = useState(30)
   const [jpFin, setJpFin] = useState(10)
-  const [showDetail, setShowDetail] = useState(true)
+  const [showDetail, setShowDetail] = useState(false)
 
   const input: CalcInput = {
     totalValueCNY: totalValue,
