@@ -38,9 +38,45 @@ export function AssetStructureCompare({
 }) {
   const T = totalValue || 500
   const isJP = habitualResidence === 'JP'
-  const [expanded, setExpanded] = useState<Record<string, boolean>>({ mixed: true })
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({})
 
   const structures: Structure[] = [
+    {
+      id: 'mixed',
+      icon: '⚖️',
+      title: '混合配置（推荐）',
+      tagline: '流动性资产保底 + 收租资产保值',
+      subline: '现金让继承人有钱办事，房产留着收租。不要把全部鸡蛋放在一个继承人搬不动的篮子里。',
+      cnCash: T * 0.3, cnRE: T * 0.3, jpCash: T * 0.2, jpRE: T * 0.2,
+      friendlyScore: 7,
+      friendlyLabel: '较高。现金部分快速到位，房产部分从容处理，两不耽误',
+      difficulty: '中等',
+      fees: [
+        { name: '现金部分费用（公证+解冻，费率低）', amount: fmtM(Math.round(T * 0.5 * 0.003 * 100) / 100) },
+        { name: '房产部分费用（公证+登记+司法书士）', amount: fmtM(Math.round(T * 0.5 * 0.012 * 100) / 100) },
+      ],
+      totalFeePct: '~0.8–2.5%',
+      procedures: [
+        '现金：公证 + 银行解冻（数周搞定，继承人先拿到钱）',
+        '房产：公证 + 房管局/法務局（数月，但不急——因为现金已经到位了）',
+      ],
+      heirsPainPoints: [
+        '✅ 现金部分先行：继承人用这笔钱支付房产过户的税费，不用自掏腰包',
+        '✅ 房产保留收租：不需要强迫所有继承人同意卖房，持续产生现金流',
+        '⚠️ 房产部分仍需全体配合签字，但用现金流作为缓冲，大大降低了急售压力',
+      ],
+      pros: [
+        '流动性 + 保值兼顾',
+        '现金支付税费，不用继承人垫钱',
+        '租金收入持续产生现金流——比卖房划算',
+        '可指定不同资产给不同继承人（日本房产给在日子女，中国资产给国内配偶）',
+      ],
+      cons: [
+        '前期需要做资产结构调整',
+        '两国资产仍需分别处理',
+      ],
+      recommended: true,
+    },
     {
       id: 'all-cash',
       icon: '💵',
@@ -121,42 +157,6 @@ export function AssetStructureCompare({
         '中日两地都要走独立的登记程序，没有捷径',
       ],
       recommended: false,
-    },
-    {
-      id: 'mixed',
-      icon: '⚖️',
-      title: '混合配置（推荐）',
-      tagline: '流动性资产保底 + 收租资产保值',
-      subline: '现金让继承人有钱办事，房产留着收租。不要把全部鸡蛋放在一个继承人搬不动的篮子里。',
-      cnCash: T * 0.3, cnRE: T * 0.3, jpCash: T * 0.2, jpRE: T * 0.2,
-      friendlyScore: 7,
-      friendlyLabel: '较高。现金部分快速到位，房产部分从容处理，两不耽误',
-      difficulty: '中等',
-      fees: [
-        { name: '现金部分费用（公证+解冻，费率低）', amount: fmtM(Math.round(T * 0.5 * 0.003 * 100) / 100) },
-        { name: '房产部分费用（公证+登记+司法书士）', amount: fmtM(Math.round(T * 0.5 * 0.012 * 100) / 100) },
-      ],
-      totalFeePct: '~0.8–2.5%',
-      procedures: [
-        '现金：公证 + 银行解冻（数周搞定，继承人先拿到钱）',
-        '房产：公证 + 房管局/法務局（数月，但不急——因为现金已经到位了）',
-      ],
-      heirsPainPoints: [
-        '✅ 现金部分先行：继承人用这笔钱支付房产过户的税费，不用自掏腰包',
-        '✅ 房产保留收租：不需要强迫所有继承人同意卖房，持续产生现金流',
-        '⚠️ 房产部分仍需全体配合签字，但用现金流作为缓冲，大大降低了急售压力',
-      ],
-      pros: [
-        '流动性 + 保值兼顾',
-        '现金支付税费，不用继承人垫钱',
-        '租金收入持续产生现金流——比卖房划算',
-        '可指定不同资产给不同继承人（日本房产给在日子女，中国资产给国内配偶）',
-      ],
-      cons: [
-        '前期需要做资产结构调整',
-        '两国资产仍需分别处理',
-      ],
-      recommended: true,
     },
   ]
 
@@ -301,8 +301,21 @@ export function AssetStructureCompare({
         ))}
       </div>
 
-      {/* 核心结论：收租 vs 卖房 */}
-      <div className="border-t border-border">
+      {/* 核心结论：收租 vs 卖房 —— 可折叠 */}
+      <RentSellSection />
+    </div>
+  )
+}
+
+function RentSellSection() {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="border-t border-border">
+      <button onClick={() => setShow(!show)} className="w-full text-left px-5 py-3 flex items-center justify-between text-sm font-medium text-text-primary hover:bg-neutral-50 transition-colors">
+        <span>🏠 收租 vs 卖房：房产怎么处理最划算？</span>
+        <span className="text-text-muted text-xs">{show ? '收起 ▲' : '展开 ▼'}</span>
+      </button>
+      {show && (
         <div className="grid sm:grid-cols-2 divide-y sm:divide-y-0 sm:divide-x divide-border">
           {/* 收租 */}
           <div className="p-4">
@@ -338,7 +351,7 @@ export function AssetStructureCompare({
             </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 底部总结 */}
       <div className="border-t border-border px-4 py-3 bg-amber-50/50">

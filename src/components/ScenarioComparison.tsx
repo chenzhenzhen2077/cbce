@@ -2,6 +2,7 @@
 // 多方案对比：法定继承 vs 分立架构 vs 配偶集中 vs 隔代传承
 // ============================================================
 
+import { useState } from 'react'
 import type { CalcInput, CalcResult, HeirAllocation } from '../engine/calculator'
 import { calculate } from '../engine/calculator'
 
@@ -258,8 +259,22 @@ export function ScenarioComparison({ input }: { input: CalcInput }) {
         </table>
       </div>
 
-      {/* 各方案详情 */}
-      <div className="border-t border-border p-5">
+      {/* 各方案详情 —— 可折叠 */}
+      <ScenarioDetailCards scenarios={scenarios} />
+    </div>
+  )
+}
+
+function ScenarioDetailCards({ scenarios }: { scenarios: { def: ScenarioDef; result: CalcResult }[] }) {
+  const [show, setShow] = useState(false)
+  return (
+    <div className="border-t border-border">
+      <button onClick={() => setShow(!show)} className="w-full text-left px-5 py-3 flex items-center justify-between text-sm font-medium text-text-primary hover:bg-neutral-50 transition-colors">
+        <span>📋 各方案优缺点对比</span>
+        <span className="text-text-muted text-xs">{show ? '收起 ▲' : '展开 ▼'}</span>
+      </button>
+      {show && (
+      <div className="px-5 pb-5">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {scenarios.map((s) => (
             <div key={s.def.id} className={`border rounded-xl p-4 ${
@@ -302,6 +317,7 @@ export function ScenarioComparison({ input }: { input: CalcInput }) {
           ))}
         </div>
       </div>
+      )}
     </div>
   )
 }

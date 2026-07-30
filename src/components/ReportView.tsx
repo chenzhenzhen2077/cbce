@@ -369,6 +369,12 @@ function CostsTab({ input, report }: { input: ComplianceInput; report: ReportOut
           所有费用和税费均为基于公开法定费率/税率的<strong>参考估算框架</strong>。实际金额因个案情况、资产评估方式、地方政策差异和汇率波动而异。<strong>请务必咨询持牌税理士/税务师确认具体数字。</strong>
         </p>
       </div>
+      <AffordabilityCheck
+        hasRealEstate={input.assets.cn_assets.includes('real_estate') || input.assets.jp_assets.includes('real_estate')}
+        hasJPAssets={input.assets.jp_assets.length > 0}
+        hasCNFinancial={input.assets.cn_assets.includes('financial') || input.assets.cn_assets.includes('insurance')}
+        onUnlock={() => {}}
+      />
       <CalculatorPanel
         hasSpouse={input.heirs.spouse_exists} childrenCount={input.heirs.children_count}
         grandchildrenCount={input.heirs.grandchildren_count} parentsAlive={input.heirs.parents_alive_count}
@@ -376,12 +382,6 @@ function CostsTab({ input, report }: { input: ComplianceInput; report: ReportOut
         maritalRegime={input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community'}
         hasWill={input.document.doc_type !== '' && input.document.doc_type !== 'NONE'}
         willType={input.document.doc_type || 'none'}
-      />
-      <AffordabilityCheck
-        hasRealEstate={input.assets.cn_assets.includes('real_estate') || input.assets.jp_assets.includes('real_estate')}
-        hasJPAssets={input.assets.jp_assets.length > 0}
-        hasCNFinancial={input.assets.cn_assets.includes('financial') || input.assets.cn_assets.includes('insurance')}
-        onUnlock={() => {}}
       />
       {/* 律师对接 —— 最后一页 */}
       <section className="bg-surface-card border border-border rounded-xl p-4">
