@@ -5,7 +5,10 @@ import { downloadPDF } from '../utils/pdf'
 import { HeirDiagram } from './HeirDiagram'
 import { GoalPlanner } from './GoalPlanner'
 import { AffordabilityCheck } from './AffordabilityCheck'
-import { UnlockModal } from './UnlockModal'
+import { CalculatorPanel } from './CalculatorPanel'
+import { ScenarioComparison } from './ScenarioComparison'
+import { AssetStructureCompare } from './AssetStructureCompare'
+import type { CalcInput } from '../engine/calculator'
 
 function generateSummary(input: ComplianceInput, report: ReportOutput): string {
   const parts: string[] = []
@@ -119,7 +122,6 @@ export function ReportView({
 }) {
   const cfg = statusConfig[report.status]
   const [pdfLoading, setPdfLoading] = useState(false)
-  const [unlockModule, setUnlockModule] = useState('')
 
   const handleDownload = useCallback(async () => {
     setPdfLoading(true)
@@ -276,28 +278,64 @@ export function ReportView({
         }}
       />
 
-      {/* === 付费模块 === */}
+      {/* === 进阶分析 === */}
 
-      <div className="border-t-2 border-dashed border-neutral-300 pt-6">
+      <div className="border-t-2 border-neutral-200 pt-6">
         <div className="text-center mb-5">
-          <span className="text-xs bg-neutral-100 text-text-muted px-3 py-1 rounded-full">
-            🔒 进阶方案（付费）
-          </span>
-          <h3 className="text-base font-semibold text-text-primary mt-2">
-            根据你的目标，定制法律策略方案
+          <h3 className="text-base font-semibold text-text-primary">
+            进阶分析与方案对比
           </h3>
           <p className="text-sm text-text-secondary mt-1">
-            指定分配 · 费用最优 · 流程最简 —— 选择你最关心的目标
+            基于你的诊断结果，深入分析费用、方案和资产结构
           </p>
         </div>
 
         <div className="space-y-5">
-          <GoalPlanner input={input} onUnlock={(name) => setUnlockModule(name)} />
+          {/* 目标规划 */}
+          <GoalPlanner input={input} onUnlock={() => {}} />
+
+          {/* 计算框架 */}
+          <CalculatorPanel
+            hasSpouse={input.heirs.spouse_exists}
+            childrenCount={input.heirs.children_count}
+            grandchildrenCount={input.heirs.grandchildren_count}
+            parentsAlive={input.heirs.parents_alive_count}
+            habitualResidence={input.identity.habitual_residence || 'CN'}
+            maritalRegime={input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community'}
+            hasWill={input.document.doc_type !== '' && input.document.doc_type !== 'NONE'}
+            willType={input.document.doc_type || 'none'}
+          />
+
+          {/* 方案对比 */}
+          <ScenarioComparison input={{
+            totalValueCNY: 500,
+            cnRealEstatePct: input.assets.cn_assets.includes('cn_re') ? 40 : 0,
+            cnFinancialPct: input.assets.cn_assets.includes('cn_fin') ? 20 : 0,
+            cnLeveragePct: input.assets.cn_assets.includes('cn_leverage') ? 10 : 0,
+            jpRealEstatePct: input.assets.jp_assets.includes('jp_re') ? 20 : 0,
+            jpFinancialPct: input.assets.jp_assets.includes('jp_fin') ? 10 : 0,
+            hasSpouse: input.heirs.spouse_exists,
+            childrenCount: input.heirs.children_count,
+            grandchildrenCount: input.heirs.grandchildren_count,
+            parentsAlive: input.heirs.parents_alive_count,
+            habitualResidence: input.identity.habitual_residence === 'JP' ? 'JP' : 'CN',
+            maritalRegime: input.identity.habitual_residence === 'JP' ? 'JP_separate' : 'CN_community',
+            hasWill: input.document.doc_type !== '' && input.document.doc_type !== 'NONE',
+            willType: input.document.doc_type || 'none',
+          } as CalcInput} />
+
+          {/* 资产结构对比 */}
+          <AssetStructureCompare
+            totalValue={500}
+            habitualResidence={input.identity.habitual_residence === 'JP' ? '日本' : '中国'}
+          />
+
+          {/* 继承可行性 */}
           <AffordabilityCheck
             hasRealEstate={input.assets.cn_assets.includes('cn_re') || input.assets.jp_assets.includes('jp_re')}
             hasJPAssets={input.assets.jp_assets.length > 0}
             hasCNFinancial={input.assets.cn_assets.includes('cn_fin')}
-            onUnlock={(name) => setUnlockModule(name)}
+            onUnlock={() => {}}
           />
         </div>
       </div>
@@ -342,12 +380,6 @@ export function ReportView({
         </button>
       </div>
 
-      {/* 解锁弹窗 */}
-      <UnlockModal
-        open={unlockModule !== ''}
-        onClose={() => setUnlockModule('')}
-        moduleName={unlockModule}
-      />
     </div>
   )
 }

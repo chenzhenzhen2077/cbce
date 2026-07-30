@@ -122,7 +122,7 @@ function buildGoals(input: ComplianceInput): Goal[] {
   return goals
 }
 
-export function GoalPlanner({ input, onUnlock }: { input: ComplianceInput; onUnlock: (name: string) => void }) {
+export function GoalPlanner({ input }: { input: ComplianceInput; onUnlock?: (name: string) => void }) {
   const goals = buildGoals(input)
 
   return (
@@ -155,46 +155,31 @@ export function GoalPlanner({ input, onUnlock }: { input: ComplianceInput; onUnl
                 <p className="text-xs text-text-secondary leading-relaxed">{g.strategy}</p>
               </div>
 
-              {/* 锁定区 */}
-              <div className="relative">
-                <div className="filter blur-[3px] select-none pointer-events-none opacity-40">
-                  <div>
-                    <p className="text-xs font-medium text-text-primary mb-1">📄 需要准备的法律文件</p>
-                    <div className="space-y-1">
-                      {g.documents.slice(0, 2).map((d, i) => (
-                        <div key={i} className="text-xs text-text-secondary flex gap-1.5">
-                          <span className="text-green-500 shrink-0">✓</span> {d}
-                        </div>
-                      ))}
-                      <div className="text-xs text-text-muted">+ {Math.max(0, g.documents.length - 2)} 项更多...</div>
-                    </div>
-                  </div>
-                  <div className="mt-3">
-                    <p className="text-xs font-medium text-text-primary mb-1">🔄 办理步骤</p>
-                    <div className="space-y-1">
-                      {g.procedures.slice(0, 2).map((p, i) => (
-                        <div key={i} className="text-xs text-text-secondary">{p}</div>
-                      ))}
-                      <div className="text-xs text-text-muted">+ {Math.max(0, g.procedures.length - 2)} 步更多...</div>
-                    </div>
-                  </div>
-                  <div className="mt-3 bg-amber-50 border border-amber-100 rounded-lg p-3">
-                    <p className="text-xs text-amber-800">{g.watchOut.slice(0, 60)}...</p>
-                  </div>
-                </div>
+              {/* 需要准备的文件 */}
+              <div>
+                <p className="text-xs font-medium text-text-primary mb-1">📄 需要准备的法律文件</p>
+                <ul className="space-y-1">
+                  {g.documents.map((d, i) => (
+                    <li key={i} className="text-xs text-text-secondary flex gap-1.5">
+                      <span className="text-green-500 shrink-0">✓</span> {d}
+                    </li>
+                  ))}
+                </ul>
+              </div>
 
-                {/* 锁定浮层 */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/70 rounded-lg">
-                  <div className="text-2xl mb-1">🔒</div>
-                  <p className="text-xs font-medium text-text-primary mb-1">¥99 解锁完整方案</p>
-                  <p className="text-[11px] text-text-muted mb-3 text-center">含法律文件清单 + 办理步骤 + 注意事项</p>
-                  <button
-                    onClick={() => onUnlock('传承方案设计')}
-                    className="px-4 py-2 bg-neutral-900 text-white rounded-lg text-xs font-medium hover:bg-neutral-800 transition-colors"
-                  >
-                    解锁 → 邮件发送完整方案
-                  </button>
-                </div>
+              {/* 办理步骤 */}
+              <div>
+                <p className="text-xs font-medium text-text-primary mb-1">🔄 办理步骤</p>
+                <ul className="space-y-1">
+                  {g.procedures.map((p, i) => (
+                    <li key={i} className="text-xs text-text-secondary">{p}</li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* 注意事项 */}
+              <div className="bg-amber-50 border border-amber-100 rounded-lg p-3">
+                <p className="text-xs text-amber-800 leading-relaxed">{g.watchOut}</p>
               </div>
             </div>
           </div>
@@ -203,18 +188,9 @@ export function GoalPlanner({ input, onUnlock }: { input: ComplianceInput; onUnl
 
       {/* CTA */}
       <div className="border-t border-border px-5 py-4 bg-neutral-50 text-center">
-        <p className="text-sm text-text-primary font-medium mb-1">
-          ¥99 · 解锁三项完整方案
+        <p className="text-sm text-text-secondary">
+          以上方案基于你的诊断结果生成。如需律师一对一咨询，请通过下方联系方式对接。
         </p>
-        <p className="text-xs text-text-muted mb-3">
-          含详细法律文件清单 + 分步办理指南 + 注意事项。解锁后发送至你的邮箱。
-        </p>
-        <button
-          onClick={() => onUnlock('传承方案设计')}
-          className="px-6 py-2.5 bg-neutral-900 text-white rounded-lg text-sm font-medium hover:bg-neutral-800 transition-colors"
-        >
-          解锁 → 邮件发送完整方案
-        </button>
       </div>
     </div>
   )
