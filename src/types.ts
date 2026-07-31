@@ -19,7 +19,7 @@ export function evaluatePreAssessment(input: PreAssessmentInput): PreAssessmentR
 // ---- 板块一：身份与居所 ----
 export interface IdentityInput {
   habitual_residence: 'CN' | 'JP' | ''
-  jp_legal_status: 'VISA' | 'PR' | 'CITIZEN' | ''
+  jp_legal_status: 'VISA' | 'PR' | 'CITIZEN' | 'NONE' | ''
   nationality: 'CN' | 'JP' | 'THIRD' | ''
 }
 

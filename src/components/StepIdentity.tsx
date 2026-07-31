@@ -47,13 +47,14 @@ export function StepIdentity({
 
       <QuestionCard
         title="被继承人在日本的法律身份"
-        hint="永住者（PR）与归化者在日本行政机关眼中的程序要求不同"
+        hint="不同身份在日本行政机关和跨境继承程序中的处理方式不同。PR 身份还会触发外汇管制额外审查。"
       >
         <div className="space-y-2">
           {[
-            { value: 'VISA', label: '长期工作/经营签证' },
+            { value: 'CITIZEN', label: '已归化入籍日本（日本国籍）' },
             { value: 'PR', label: '日本永住者（PR）' },
-            { value: 'CITIZEN', label: '已归化入籍日本' },
+            { value: 'VISA', label: '持有日本长期签证（工作/经营/留学/家族滞在等）' },
+            { value: 'NONE', label: '非常住日本，仅持有日本资产' },
           ].map((opt) => (
             <label key={opt.value} className="cursor-pointer block">
               <input
@@ -64,7 +65,7 @@ export function StepIdentity({
                 onChange={(e) =>
                   onChange({
                     ...data,
-                    jp_legal_status: e.target.value as 'VISA' | 'PR' | 'CITIZEN',
+                    jp_legal_status: e.target.value as 'VISA' | 'PR' | 'CITIZEN' | 'NONE',
                   })
                 }
                 className="peer sr-only"

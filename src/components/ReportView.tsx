@@ -18,7 +18,7 @@ import type { CalcInput } from '../engine/calculator'
 function generateSummary(input: ComplianceInput, report: ReportOutput): string {
   const parts: string[] = []
   const residence = input.identity.habitual_residence === 'CN' ? '中国大陆' : '日本'
-  const statusMap: Record<string, string> = { VISA: '持有长期工作/经营签证', PR: '日本永住者', CITIZEN: '已归化入籍日本' }
+  const statusMap: Record<string, string> = { CITIZEN: '已归化入籍日本', PR: '日本永住者', VISA: '持有日本长期签证', NONE: '非常住日本' }
   const natMap: Record<string, string> = { CN: '中国籍', JP: '日本籍', THIRD: '第三国/地区' }
   const idParts = [`被继承人常住${residence}`]
   if (input.identity.jp_legal_status) idParts.push(statusMap[input.identity.jp_legal_status] || input.identity.jp_legal_status)
@@ -388,8 +388,7 @@ function CostsTab({ input, report }: { input: ComplianceInput; report: ReportOut
         <p className="text-xs text-text-secondary mb-2">复制下方案情摘要发送给中日涉外律师或日本司法书士。</p>
         <div className="bg-surface border border-border rounded-lg p-3 relative group">
           <div className="text-xs text-text-primary leading-relaxed whitespace-pre-wrap">{generateSummary(input, report)}</div>
-          <button onClick={() => navigator.clipboard.writeText(generateSummary(input, report))}
-            className="absolute top-2 right-2 text-[11px] px-2 py-1 bg-white border border-border rounded hover:bg-neutral-50 transition-colors">复制</button>
+          <span className="absolute top-2 right-2 text-[11px] px-2 py-1 bg-white border border-border rounded text-text-muted">长按选中复制</span>
         </div>
       </section>
     </div>
